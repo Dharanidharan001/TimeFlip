@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Geist:wght@400;600&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&amp;family=Inter:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.02);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .hairline-border {
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        input[type="range"] {
+            -webkit-appearance: none;
+            background: rgba(255, 255, 255, 0.1);
+            height: 4px;
+            border-radius: 2px;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #adc6ff;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.2s ease, background-color 0.2s ease;
+        }
+        input[type="range"]:active::-webkit-slider-thumb {
+            transform: scale(1.3);
+            background: #ffffff;
+        }
+
+        /* Custom Animations */
+        @keyframes scale-in {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        @keyframes fade-in-up {
+            from { transform: translateY(15px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 10px rgba(173,198,255,0.1); }
+            50% { box-shadow: 0 0 25px rgba(173,198,255,0.5); }
+        }
+        
+        .animate-scale-in {
+            animation: scale-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .animate-fade-in-up {
+            animation: fade-in-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+        }
+        .animate-pulse-glow {
+            animation: pulse-glow 2.5s infinite ease-in-out;
+        }
+        .delay-100 { animation-delay: 100ms; }
+        .delay-200 { animation-delay: 200ms; }
+        .delay-300 { animation-delay: 300ms; }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-error-container": "#ffdad6",
+                        "surface": "#121414",
+                        "on-surface": "#e3e2e2",
+                        "on-secondary-fixed-variant": "#454747",
+                        "secondary-fixed": "#e2e2e2",
+                        "surface-container-lowest": "#0d0e0f",
+                        "surface-container-high": "#292a2a",
+                        "primary-fixed": "#d8e2ff",
+                        "inverse-primary": "#005ac2",
+                        "on-tertiary-fixed-variant": "#723600",
+                        "on-primary": "#002e6a",
+                        "outline-variant": "#424754",
+                        "secondary-fixed-dim": "#c6c6c7",
+                        "on-surface-variant": "#c2c6d6",
+                        "surface-dim": "#121414",
+                        "on-secondary-container": "#b4b5b5",
+                        "on-secondary": "#2f3131",
+                        "tertiary-fixed": "#ffdcc6",
+                        "surface-container": "#1f2020",
+                        "secondary-container": "#454747",
+                        "on-background": "#e3e2e2",
+                        "tertiary-fixed-dim": "#ffb786",
+                        "surface-container-low": "#1b1c1c",
+                        "on-primary-fixed-variant": "#004395",
+                        "surface-variant": "#343535",
+                        "primary-fixed-dim": "#adc6ff",
+                        "background": "#121414",
+                        "surface-container-highest": "#343535",
+                        "primary": "#adc6ff",
+                        "surface-tint": "#adc6ff",
+                        "on-tertiary": "#502400",
+                        "inverse-on-surface": "#303031",
+                        "tertiary": "#ffb786",
+                        "on-secondary-fixed": "#1a1c1c",
+                        "surface-bright": "#383939",
+                        "inverse-surface": "#e3e2e2",
+                        "primary-container": "#4d8eff",
+                        "outline": "#8c909f",
+                        "on-tertiary-fixed": "#311400",
+                        "tertiary-container": "#df7412",
+                        "on-error": "#690005",
+                        "secondary": "#c6c6c7",
+                        "on-primary-container": "#00285d",
+                        "on-primary-fixed": "#001a42",
+                        "on-tertiary-container": "#461f00",
+                        "error": "#ffb4ab",
+                        "error-container": "#93000a"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "container-max": "1200px",
+                        "margin-mobile": "20px",
+                        "margin-desktop": "40px",
+                        "unit": "8px",
+                        "gutter": "24px"
+                    },
+                    "fontFamily": {
+                        "mono-data": ["Geist"],
+                        "body-lg": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "label-caps": ["Geist"],
+                        "body-sm": ["Inter"],
+                        "display-lg-mobile": ["Inter"],
+                        "display-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "mono-data": ["14px", {"lineHeight": "1", "letterSpacing": "0", "fontWeight": "400"}],
+                        "body-lg": ["16px", {"lineHeight": "1.6", "letterSpacing": "0.01em", "fontWeight": "400"}],
+                        "headline-md": ["24px", {"lineHeight": "1.4", "letterSpacing": "-0.02em", "fontWeight": "500"}],
+                        "label-caps": ["12px", {"lineHeight": "1", "letterSpacing": "0.1em", "fontWeight": "600"}],
+                        "body-sm": ["14px", {"lineHeight": "1.5", "letterSpacing": "0.01em", "fontWeight": "400"}],
+                        "display-lg-mobile": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.04em", "fontWeight": "600"}],
+                        "display-lg": ["64px", {"lineHeight": "1.1", "letterSpacing": "-0.04em", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-surface font-body-lg text-body-lg min-h-screen pb-32">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface/10 backdrop-blur-xl border-b border-white/10 h-16 flex items-center justify-between px-margin-mobile md:px-margin-desktop">
+<div class="flex items-center gap-4">
+<button class="active:scale-95 transition-transform hover:opacity-80">
+<span class="material-symbols-outlined text-primary">menu</span>
+</button>
+<h1 class="font-headline-md text-headline-md font-medium text-on-surface">FocusFlip</h1>
+</div>
+<div class="flex items-center">
+<button class="active:scale-95 transition-transform hover:opacity-80">
+<span class="material-symbols-outlined text-primary">settings</span>
+</button>
+</div>
+</header>
+<main class="pt-24 px-margin-mobile md:px-margin-desktop max-w-4xl mx-auto space-y-gutter">
+<!-- Profile Header -->
+<section class="flex flex-col md:flex-row items-center gap-6 py-6">
+<div class="relative animate-scale-in">
+<div class="w-24 h-24 rounded-full p-1 bg-gradient-to-tr from-primary to-transparent">
+<div class="w-full h-full rounded-full bg-surface-container-high flex items-center justify-center overflow-hidden border border-white/10">
+<img class="w-full h-full object-cover" data-alt="A professional, minimalist studio portrait of a modern high-achiever with soft cinematic lighting, deep black background, and high-fidelity textures. The lighting highlights sharp contours and creates a sophisticated, premium mood consistent with the OLED-first technical minimalism of the app design." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCDZoTdSvMUmC6j4CPAxIz2KMGxSbXxwrvrUPMcvwbpIjrmsLynHm7f2-ob6W5DnSLz0cLb0l32mx0azfvNUAcLq4pBjIrR9AEqlVEsbnCRMtaDOyLKw-l5tt5cUnSjj5vLcmwD2Un_6nDcPX84hfGCM2gkO_q1Da_YcIrC8UED3jw9nJWWrKhVcYiZfbvIJyIpN2RnN5wGvXcuHJYG-VUBdwoMImF4KD0JNbRDFBRM8XgGbTODehLxPlEaNaZrhsxeV-hcSkYM8QQU"/>
+</div>
+</div>
+</div>
+<div class="text-center md:text-left flex-1 animate-fade-in-up delay-100">
+<h2 class="font-headline-md text-headline-md mb-1">Alex Thorne</h2>
+<div class="flex items-center justify-center md:justify-start gap-2">
+<span class="bg-primary text-on-primary px-3 py-0.5 rounded-full font-label-caps text-label-caps">Pro Member</span>
+<span class="text-on-surface-variant font-label-caps text-label-caps">Since 2023</span>
+</div>
+</div>
+<button class="bg-on-surface text-surface px-6 py-2 rounded-full font-label-caps text-label-caps active:scale-95 transition-all animate-fade-in-up delay-200">Edit Profile</button>
+</section>
+<!-- Settings List -->
+<section class="space-y-4">
+<h3 class="font-label-caps text-label-caps text-on-surface-variant px-2">Account Settings</h3>
+<div class="glass-card rounded-xl overflow-hidden">
+<div class="divide-y divide-white/10">
+<button class="w-full flex items-center justify-between p-4 hover:bg-white/5 transition-colors group animate-fade-in-up delay-100">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary">account_circle</span>
+<span class="text-body-lg">Account Information</span>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant group-hover:translate-x-1 transition-transform">chevron_right</span>
+</button>
+<button class="w-full flex items-center justify-between p-4 hover:bg-white/5 transition-colors group animate-fade-in-up delay-200">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary">cloud_upload</span>
+<span class="text-body-lg">Cloud Backup</span>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant group-hover:translate-x-1 transition-transform">chevron_right</span>
+</button>
+<button class="w-full flex items-center justify-between p-4 hover:bg-white/5 transition-colors group animate-fade-in-up delay-300">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary">file_export</span>
+<span class="text-body-lg">Export Focus Data</span>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant group-hover:translate-x-1 transition-transform">chevron_right</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Theme Store -->
+<section class="space-y-4">
+<div class="flex items-center justify-between px-2">
+<h3 class="font-label-caps text-label-caps text-on-surface-variant">Theme Store</h3>
+<button class="text-primary font-label-caps text-label-caps">View All</button>
+</div>
+<div class="flex gap-4 overflow-x-auto pb-4 -mx-margin-mobile px-margin-mobile scroll-smooth no-scrollbar">
+<!-- AMOLED Card -->
+<div class="min-w-[200px] glass-card rounded-xl overflow-hidden p-3 group cursor-pointer hover:border-primary transition-all duration-300 active:scale-105 hover:-translate-y-1">
+<div class="h-24 bg-black rounded-lg mb-3 flex items-center justify-center relative border border-white/5">
+<div class="w-12 h-12 rounded-full border-2 border-white/20"></div>
+<div class="absolute bottom-2 right-2 w-4 h-4 bg-primary rounded-full shadow-lg shadow-primary/20"></div>
+</div>
+<p class="font-label-caps text-label-caps text-center">AMOLED</p>
+</div>
+<!-- Cyber Blue -->
+<div class="min-w-[200px] glass-card rounded-xl overflow-hidden p-3 group cursor-pointer hover:border-primary transition-all duration-300 active:scale-105 hover:-translate-y-1 border-primary animate-pulse-glow">
+<div class="h-24 bg-[#0a192f] rounded-lg mb-3 flex items-center justify-center relative border border-primary/30">
+<div class="w-12 h-12 rounded-full border-2 border-primary/40 shadow-[0_0_15px_rgba(173,198,255,0.3)]"></div>
+<span class="absolute top-1 right-1 material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<p class="font-label-caps text-label-caps text-center text-primary">Cyber Blue</p>
+</div>
+<!-- Retro Flip -->
+<div class="min-w-[200px] glass-card rounded-xl overflow-hidden p-3 group cursor-pointer hover:border-primary transition-all duration-300 active:scale-105 hover:-translate-y-1">
+<div class="h-24 bg-[#2a2a2a] rounded-lg mb-3 flex items-center justify-center relative border border-orange-500/20">
+<div class="font-mono-data text-2xl text-orange-500">25:00</div>
+</div>
+<p class="font-label-caps text-label-caps text-center">Retro Flip</p>
+</div>
+<!-- Terminal -->
+<div class="min-w-[200px] glass-card rounded-xl overflow-hidden p-3 group cursor-pointer hover:border-primary transition-all duration-300 active:scale-105 hover:-translate-y-1">
+<div class="h-24 bg-[#0d1117] rounded-lg mb-3 p-2 relative border border-green-500/20">
+<div class="text-[8px] font-mono-data text-green-500 opacity-60">
+                            $ focus --start<br/>
+                            &gt; status: deep_work<br/>
+                            &gt; time: 24:59
+                        </div>
+</div>
+<p class="font-label-caps text-label-caps text-center">Terminal</p>
+</div>
+</div>
+</section>
+<!-- Customization -->
+<section class="space-y-4">
+<h3 class="font-label-caps text-label-caps text-on-surface-variant px-2">Fine-Tuning</h3>
+<div class="glass-card rounded-xl p-6 space-y-8">
+<!-- Accent Color -->
+<div class="space-y-3">
+<div class="flex justify-between items-center">
+<label class="text-body-sm text-on-surface-variant font-medium">Accent Color</label>
+<span class="text-primary font-mono-data text-xs uppercase">#ADC6FF</span>
+</div>
+<div class="flex gap-3">
+<div class="w-8 h-8 rounded-full bg-primary ring-2 ring-offset-2 ring-offset-surface ring-white/40 cursor-pointer"></div>
+<div class="w-8 h-8 rounded-full bg-tertiary hover:scale-110 transition-transform cursor-pointer"></div>
+<div class="w-8 h-8 rounded-full bg-error hover:scale-110 transition-transform cursor-pointer"></div>
+<div class="w-8 h-8 rounded-full bg-[#8c909f] hover:scale-110 transition-transform cursor-pointer"></div>
+<div class="w-8 h-8 rounded-full bg-white/20 border border-white/20 flex items-center justify-center cursor-pointer hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-sm">palette</span>
+</div>
+</div>
+</div>
+<!-- Timer Style -->
+<div class="space-y-3">
+<div class="flex justify-between items-center">
+<label class="text-body-sm text-on-surface-variant font-medium">Timer Display Style</label>
+<span class="text-on-surface font-mono-data text-xs">Monospace Digital</span>
+</div>
+<input class="w-full cursor-pointer accent-primary" max="100" min="1" type="range" value="75"/>
+<div class="flex justify-between text-[10px] text-on-surface-variant font-label-caps">
+<span>Minimal</span>
+<span>Standard</span>
+<span>Dynamic</span>
+</div>
+</div>
+<!-- Animation Speed -->
+<div class="space-y-3">
+<div class="flex justify-between items-center">
+<label class="text-body-sm text-on-surface-variant font-medium">Fluid Animation Speed</label>
+<span class="text-on-surface font-mono-data text-xs">0.4s (Default)</span>
+</div>
+<input class="w-full cursor-pointer accent-primary" max="100" min="1" type="range" value="40"/>
+<div class="flex justify-between text-[10px] text-on-surface-variant font-label-caps">
+<span>Static</span>
+<span>Responsive</span>
+<span>Hyper-fluid</span>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-8 left-0 right-0 z-50 flex justify-around items-center px-6 py-3 mx-margin-mobile bg-surface-container/40 backdrop-blur-2xl border border-white/10 shadow-xl rounded-full max-w-md mx-auto">
+<button class="flex items-center justify-center text-on-surface-variant p-3 hover:bg-white/5 transition-colors active:scale-90 duration-200">
+<span class="material-symbols-outlined">timer</span>
+</button>
+<button class="flex items-center justify-center text-on-surface-variant p-3 hover:bg-white/5 transition-colors active:scale-90 duration-200">
+<span class="material-symbols-outlined">equalizer</span>
+</button>
+<button class="flex items-center justify-center bg-on-surface text-surface rounded-full p-3 active:scale-90 duration-200">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">person</span>
+</button>
+</nav>
+<script>
+        // Simple micro-interaction for slider display updates
+        document.querySelectorAll('input[type="range"]').forEach(slider => {
+            slider.addEventListener('input', (e) => {
+                const label = e.target.parentElement.querySelector('.font-mono-data');
+                if (label) {
+                    // Logic would go here to update string based on value
+                }
+            });
+        });
+
+        // Horizontal scroll with mouse wheel for theme store
+        const scrollContainer = document.querySelector('.overflow-x-auto');
+        scrollContainer.addEventListener('wheel', (evt) => {
+            evt.preventDefault();
+            scrollContainer.scrollLeft += evt.deltaY;
+        });
+    </script>
+</body></html>

@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>FocusFlip - Focus Mode</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=Geist:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-fixed-variant": "#004395",
+                        "surface": "#131313",
+                        "on-secondary-fixed": "#1a1c1c",
+                        "on-secondary": "#2f3131",
+                        "secondary-fixed-dim": "#c6c6c7",
+                        "error": "#ffb4ab",
+                        "on-error": "#690005",
+                        "surface-dim": "#131313",
+                        "inverse-surface": "#e2e2e2",
+                        "tertiary-container": "#929090",
+                        "outline": "#8c909f",
+                        "primary": "#adc6ff",
+                        "on-tertiary-container": "#2a2a2a",
+                        "surface-container-high": "#2a2a2a",
+                        "secondary-fixed": "#e2e2e2",
+                        "background": "#131313",
+                        "on-primary": "#002e6a",
+                        "surface-bright": "#393939",
+                        "secondary": "#c6c6c7",
+                        "primary-fixed-dim": "#adc6ff",
+                        "on-secondary-container": "#b4b5b5",
+                        "on-primary-container": "#00285d",
+                        "tertiary": "#c8c6c5",
+                        "on-tertiary": "#313030",
+                        "on-primary-fixed": "#001a42",
+                        "on-tertiary-fixed": "#1c1b1b",
+                        "on-background": "#e2e2e2",
+                        "secondary-container": "#454747",
+                        "on-tertiary-fixed-variant": "#474746",
+                        "error-container": "#93000a",
+                        "surface-container-highest": "#353535",
+                        "inverse-primary": "#005ac2",
+                        "surface-container": "#1f1f1f",
+                        "surface-variant": "#353535",
+                        "surface-tint": "#adc6ff",
+                        "tertiary-fixed": "#e5e2e1",
+                        "on-error-container": "#ffdad6",
+                        "primary-fixed": "#d8e2ff",
+                        "on-surface-variant": "#c2c6d6",
+                        "tertiary-fixed-dim": "#c8c6c5",
+                        "on-surface": "#e2e2e2",
+                        "primary-container": "#4d8eff",
+                        "surface-container-lowest": "#0e0e0e",
+                        "on-secondary-fixed-variant": "#454747",
+                        "outline-variant": "#424754",
+                        "surface-container-low": "#1b1b1b",
+                        "inverse-on-surface": "#303030"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xl": "80px",
+                        "xs": "4px",
+                        "sm": "12px",
+                        "base": "8px",
+                        "md": "24px",
+                        "lg": "48px",
+                        "container-margin": "24px",
+                        "gutter": "16px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "display": ["Inter"],
+                        "label-sm": ["Geist"],
+                        "label-md": ["Geist"],
+                        "headline-md": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "body-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "display": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.04em", "fontWeight": "700" }],
+                        "label-sm": ["12px", { "lineHeight": "1.2", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "label-md": ["14px", { "lineHeight": "1.4", "letterSpacing": "0.02em", "fontWeight": "500" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "1.2", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: #000000;
+            color: #e2e2e2;
+            overflow: hidden;
+            touch-action: manipulation;
+            user-select: none;
+            -webkit-user-select: none;
+            animation: expandIn 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes expandIn {
+            0% { transform: scale(0.95); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .breathe-animation {
+            animation: breathe 4s ease-in-out infinite;
+        }
+
+        @keyframes breathe {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        /* 3D Digit Breathing Float & Glow */
+        @keyframes digitFloat {
+            0%, 100% { 
+                transform: translateY(0); 
+                text-shadow: 0 4px 24px rgba(0,0,0,0.8);
+            }
+            50% { 
+                transform: translateY(-8px); 
+                text-shadow: 0 12px 32px rgba(173,198,255,0.15);
+            }
+        }
+
+        .digit-float-1 { animation: digitFloat 6s ease-in-out infinite; }
+        .digit-float-2 { animation: digitFloat 6s ease-in-out infinite -2s; }
+        .digit-float-3 { animation: digitFloat 6s ease-in-out infinite -4s; }
+
+        /* Metadata Fade In */
+        @keyframes slowFadeIn {
+            0% { opacity: 0; transform: translateY(16px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        .metadata-fade {
+            opacity: 0;
+            animation: slowFadeIn 2s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.5s;
+        }
+
+        .controls-transition {
+            transition: opacity 0.5s ease-in-out, transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .controls-hidden {
+            opacity: 0;
+            transform: translateY(20px);
+            pointer-events: none;
+        }
+
+        .controls-visible {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        /* Glassmorphism utility for controls */
+        .glass-pill {
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Large minimalist digits */
+        .digit-display {
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -0.05em;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="h-screen w-screen flex flex-col items-center justify-between relative" id="main-container">
+<!-- Top Spacer -->
+<div class="mt-12 md:mt-16 w-full"></div>
+<!-- Center 3D Scene + Overlay Digits -->
+<div class="relative flex-1 w-full max-w-sm mx-auto flex flex-col items-center justify-center my-8 z-0">
+<!-- 3D Animation Background -->
+<!-- HTML Overlay Digits positioned over the 3D blocks -->
+<div class="relative z-10 flex flex-col items-center justify-center h-full py-12 w-full gap-2">
+<!-- Hours -->
+<div class="flex items-center justify-center w-full">
+<span class="font-display text-[96px] md:text-[120px] font-bold text-on-surface leading-none digit-display digit-float-1">
+                    00
+                </span>
+</div>
+<!-- Minutes -->
+<div class="flex items-center justify-center w-full">
+<span class="font-display text-[96px] md:text-[120px] font-bold text-on-surface leading-none digit-display digit-float-2">
+                    24
+                </span>
+</div>
+<!-- Seconds -->
+<div class="flex items-center justify-center w-full">
+<span class="font-display text-[96px] md:text-[120px] font-bold text-outline leading-none digit-display digit-float-3">
+                    18
+                </span>
+</div>
+</div>
+</div>
+<!-- Bottom Controls & Footnote -->
+<div class="mb-12 md:mb-16 flex flex-col items-center gap-6 w-full z-10 px-container-margin metadata-fade">
+<!-- Floating Controls Pill -->
+<div class="glass-pill rounded-full px-8 py-4 flex items-center gap-8 controls-transition controls-hidden" id="controls-pill">
+<button class="w-12 h-12 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-[28px] text-on-surface" style="font-variation-settings: 'FILL' 1;">pause</span>
+</button>
+<div class="w-px h-8 bg-white/10"></div>
+<button class="w-12 h-12 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-[28px] text-error" style="font-variation-settings: 'FILL' 1;">stop</span>
+</button>
+</div>
+<!-- Bottom Status (Breathing) -->
+<div class="flex items-center gap-2 z-10 breathe-animation">
+<span class="w-2 h-2 rounded-full bg-primary shadow-[0_0_8px_rgba(173,198,255,0.8)]"></span>
+<span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-[0.1em]">Deep Coding • 45%</span>
+</div>
+<!-- Footnote -->
+<div class="font-label-sm text-label-sm text-on-surface-variant opacity-50 tracking-[0.1em]">
+            TODAY 5h 42m
+        </div>
+</div>
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const container = document.getElementById('main-container');
+            const controlsPill = document.getElementById('controls-pill');
+            let hideTimeout;
+            let lastTap = 0;
+            let pressTimer;
+
+            // Trigger initial auto-hide if controls start visible (optional)
+            
+            const showControls = () => {
+                controlsPill.classList.remove('controls-hidden');
+                controlsPill.classList.add('controls-visible');
+                
+                clearTimeout(hideTimeout);
+                hideTimeout = setTimeout(() => {
+                    controlsPill.classList.remove('controls-visible');
+                    controlsPill.classList.add('controls-hidden');
+                }, 2000);
+            };
+
+            // Initial brief show to indicate controls exist
+            setTimeout(() => {
+                showControls();
+            }, 1000);
+
+            // Interaction Logic
+            container.addEventListener('touchstart', (e) => {
+                // Prevent default to avoid selection/magnifier on long press
+                if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'SPAN') {
+                    e.preventDefault();
+                }
+
+                const currentTime = new Date().getTime();
+                const tapLength = currentTime - lastTap;
+                
+                // Double tap detection
+                if (tapLength < 300 && tapLength > 0) {
+                    console.log('Double tap: Paused');
+                    // Add pause visual feedback here if needed
+                    clearTimeout(pressTimer);
+                    e.preventDefault();
+                } else {
+                    // Single tap show controls
+                    showControls();
+                    
+                    // Long press detection
+                    pressTimer = setTimeout(() => {
+                        console.log('Long press: Finished');
+                        // Add finish visual feedback here if needed
+                        controlsPill.classList.remove('controls-hidden');
+                        controlsPill.classList.add('controls-visible');
+                    }, 800); // 800ms for long press
+                }
+                lastTap = currentTime;
+            }, { passive: false });
+
+            container.addEventListener('touchend', () => {
+                clearTimeout(pressTimer);
+            });
+            
+            // Mouse equivalents for testing on desktop
+            container.addEventListener('mousedown', (e) => {
+                if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'SPAN') {
+                    e.preventDefault();
+                }
+                showControls();
+            });
+        });
+    </script>
+</body></html>
