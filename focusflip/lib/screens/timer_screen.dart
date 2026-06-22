@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../models/app_state.dart';
 import '../theme/design_system.dart';
 import '../widgets/glass_card.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class TimerScreen extends StatelessWidget {
   const TimerScreen({super.key});
@@ -29,7 +30,7 @@ class TimerScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Good Evening',
+                        'Hello, ${FirebaseAuth.instance.currentUser?.displayName ?? FirebaseAuth.instance.currentUser?.email?.split('@')[0] ?? 'User'}',
                         style: DesignSystem.getLabelMd(
                           context,
                           color: theme.onSurfaceMuted,
@@ -84,11 +85,20 @@ class TimerScreen extends StatelessWidget {
 
               // Timer Readout Display
               Center(
-                child: Text(
-                  '00:25:00', // Default session duration display
-                  style: DesignSystem.getDisplay(context, color: Colors.white).copyWith(
-                    fontSize: 80,
-                    height: 1.0,
+                child: GestureDetector(
+                  onTap: () => _showDurationPicker(context, appState),
+                  child: MouseRegion(
+                    cursor: SystemMouseCursors.click,
+                    child: Tooltip(
+                      message: 'Tap to change duration',
+                      child: Text(
+                        _formatTimerReadout(appState.initialTimerDuration),
+                        style: DesignSystem.getDisplay(context, color: Colors.white).copyWith(
+                          fontSize: 72,
+                          height: 1.0,
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -124,8 +134,7 @@ class TimerScreen extends StatelessWidget {
                   height: 56,
                   child: ElevatedButton.icon(
                     onPressed: () {
-                      // Start a 25-minute timer session
-                      appState.startTimer(const Duration(minutes: 25));
+                      appState.startTimer(appState.initialTimerDuration);
                     },
                     icon: const Icon(
                       Icons.play_arrow,
@@ -356,6 +365,140 @@ class TimerScreen extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  String _formatTimerReadout(Duration duration) {
+    final hours = duration.inHours.toString().padLeft(2, '0');
+    final minutes = duration.inMinutes.remainder(60).toString().padLeft(2, '0');
+    final seconds = duration.inSeconds.remainder(60).toString().padLeft(2, '0');
+    return '$hours:$minutes:$seconds';
+  }
+
+  void _showDurationPicker(BuildContext context, AppState appState) {
+    final theme = appState.theme;
+    int selectedHours = appState.initialTimerDuration.inHours;
+    int selectedMinutes = appState.initialTimerDuration.inMinutes.remainder(60);
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return GlassCard(
+              borderRadius: 24,
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Set Focus Duration',
+                    style: DesignSystem.getHeadlineMd(context, color: Colors.white),
+                  ),
+                  const SizedBox(height: 24),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Hours Selector
+                      Column(
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.keyboard_arrow_up, color: Colors.white),
+                            onPressed: () {
+                              setModalState(() {
+                                selectedHours = (selectedHours + 1) % 24;
+                              });
+                            },
+                          ),
+                          Text(
+                            selectedHours.toString().padLeft(2, '0'),
+                            style: const TextStyle(fontSize: 48, color: Colors.white, fontWeight: FontWeight.bold),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white),
+                            onPressed: () {
+                              setModalState(() {
+                                selectedHours = (selectedHours - 1 + 24) % 24;
+                              });
+                            },
+                          ),
+                          Text('HOURS', style: DesignSystem.getLabelSm(context, color: theme.onSurfaceMuted)),
+                        ],
+                      ),
+                      const SizedBox(width: 40),
+                      const Text(
+                        ':',
+                        style: TextStyle(fontSize: 48, color: Colors.white54, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(width: 40),
+                      // Minutes Selector
+                      Column(
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.keyboard_arrow_up, color: Colors.white),
+                            onPressed: () {
+                              setModalState(() {
+                                selectedMinutes = (selectedMinutes + 5) % 60;
+                              });
+                            },
+                          ),
+                          Text(
+                            selectedMinutes.toString().padLeft(2, '0'),
+                            style: const TextStyle(fontSize: 48, color: Colors.white, fontWeight: FontWeight.bold),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white),
+                            onPressed: () {
+                              setModalState(() {
+                                selectedMinutes = (selectedMinutes - 5 + 60) % 60;
+                              });
+                            },
+                          ),
+                          Text('MINUTES', style: DesignSystem.getLabelSm(context, color: theme.onSurfaceMuted)),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: Text(
+                          'CANCEL',
+                          style: DesignSystem.getLabelMd(context, color: theme.onSurfaceMuted),
+                        ),
+                      ),
+                      ElevatedButton(
+                        onPressed: () {
+                          if (selectedHours == 0 && selectedMinutes == 0) {
+                            return;
+                          }
+                          appState.setInitialTimerDuration(Duration(
+                            hours: selectedHours,
+                            minutes: selectedMinutes,
+                          ));
+                          Navigator.pop(context);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: theme.defaultAccent,
+                          foregroundColor: Colors.black,
+                        ),
+                        child: Text(
+                          'APPLY',
+                          style: DesignSystem.getLabelMd(context, color: Colors.black),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }

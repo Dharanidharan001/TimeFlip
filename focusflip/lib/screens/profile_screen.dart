@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../models/app_state.dart';
 import '../theme/design_system.dart';
 import '../widgets/glass_card.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -11,6 +12,9 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final appState = Provider.of<AppState>(context);
     final theme = appState.theme;
+    final user = FirebaseAuth.instance.currentUser;
+    final userName = user?.displayName ?? user?.email?.split('@')[0] ?? 'User';
+    final userEmail = user?.email ?? 'Not Logged In';
 
     // String representation of accent color hex code
     final accentHex = '#${appState.accentColor.toARGB32().toRadixString(16).substring(2).toUpperCase()}';
@@ -91,24 +95,34 @@ class ProfileScreen extends StatelessWidget {
                               color: Color(0xFF1F2020),
                             ),
                             clipBehavior: Clip.antiAlias,
-                            child: Image.network(
-                              'https://lh3.googleusercontent.com/aida-public/AB6AXuCDZoTdSvMUmC6j4CPAxIz2KMGxSbXxwrvrUPMcvwbpIjrmsLynHm7f2-ob6W5DnSLz0cLb0l32mx0azfvNUAcLq4pBjIrR9AEqlVEsbnCRMtaDOyLKw-l5tt5cUnSjj5vLcmwD2Un_6nDcPX84hfGCM2gkO_q1Da_YcIrC8UED3jw9nJWWrKhVcYiZfbvIJyIpN2RnN5wGvXcuHJYG-VUBdwoMImF4KD0JNbRDFBRM8XgGbTODehLxPlEaNaZrhsxeV-hcSkYM8QQU',
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Center(
-                                  child: Icon(
-                                    Icons.person,
-                                    color: Colors.white.withValues(alpha: 0.6),
-                                    size: 40,
+                            child: user?.photoURL != null
+                                ? Image.network(
+                                    user!.photoURL!,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) => Center(
+                                      child: Icon(
+                                        Icons.person,
+                                        color: Colors.white.withValues(alpha: 0.6),
+                                        size: 40,
+                                      ),
+                                    ),
+                                  )
+                                : Image.network(
+                                    'https://lh3.googleusercontent.com/aida-public/AB6AXuCDZoTdSvMUmC6j4CPAxIz2KMGxSbXxwrvrUPMcvwbpIjrmsLynHm7f2-ob6W5DnSLz0cLb0l32mx0azfvNUAcLq4pBjIrR9AEqlVEsbnCRMtaDOyLKw-l5tt5cUnSjj5vLcmwD2Un_6nDcPX84hfGCM2gkO_q1Da_YcIrC8UED3jw9nJWWrKhVcYiZfbvIJyIpN2RnN5wGvXcuHJYG-VUBdwoMImF4KD0JNbRDFBRM8XgGbTODehLxPlEaNaZrhsxeV-hcSkYM8QQU',
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) => Center(
+                                      child: Icon(
+                                        Icons.person,
+                                        color: Colors.white.withValues(alpha: 0.6),
+                                        size: 40,
+                                      ),
+                                    ),
                                   ),
-                                );
-                              },
-                            ),
                           ),
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          'Alex Thorne',
+                          userName,
                           style: DesignSystem.getHeadlineMd(
                             context,
                             color: Colors.white,
@@ -180,6 +194,7 @@ class ProfileScreen extends StatelessWidget {
                           icon: Icons.account_circle,
                           title: 'Account Information',
                           theme: theme,
+                          onTap: () => _showAccountInfoDialog(context, user, userName, userEmail),
                         ),
                         const Divider(color: Color(0x1AFFFFFF), height: 1),
                         _buildSettingsRow(
@@ -187,13 +202,27 @@ class ProfileScreen extends StatelessWidget {
                           icon: Icons.cloud_upload,
                           title: 'Cloud Backup',
                           theme: theme,
+                          onTap: () => _showCloudBackupDialog(context, theme),
                         ),
                         const Divider(color: Color(0x1AFFFFFF), height: 1),
                         _buildSettingsRow(
                           context: context,
-                          icon: Icons.file_upload, // export style
+                          icon: Icons.file_upload,
                           title: 'Export Focus Data',
                           theme: theme,
+                          onTap: () => _showExportDataDialog(context, appState, theme),
+                        ),
+                        const Divider(color: Color(0x1AFFFFFF), height: 1),
+                        _buildSettingsRow(
+                          context: context,
+                          icon: Icons.logout,
+                          title: 'Sign Out',
+                          theme: theme,
+                          textColor: theme.error,
+                          iconColor: theme.error,
+                          onTap: () async {
+                            await appState.logout();
+                          },
                         ),
                       ],
                     ),
@@ -494,21 +523,27 @@ class ProfileScreen extends StatelessWidget {
     required IconData icon,
     required String title,
     required AppThemeData theme,
+    Color? textColor,
+    Color? iconColor,
+    VoidCallback? onTap,
   }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
-      child: Row(
-        children: [
-          Icon(icon, color: theme.defaultAccent, size: 24),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Text(
-              title,
-              style: DesignSystem.getBodyLg(context, color: Colors.white).copyWith(fontSize: 16),
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
+        child: Row(
+          children: [
+            Icon(icon, color: iconColor ?? theme.defaultAccent, size: 24),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Text(
+                title,
+                style: DesignSystem.getBodyLg(context, color: textColor ?? Colors.white).copyWith(fontSize: 16),
+              ),
             ),
-          ),
-          Icon(Icons.chevron_right, color: theme.onSurfaceMuted, size: 20),
-        ],
+            Icon(Icons.chevron_right, color: theme.onSurfaceMuted, size: 20),
+          ],
+        ),
       ),
     );
   }
@@ -635,6 +670,98 @@ class ProfileScreen extends StatelessWidget {
                 'CLOSE',
                 style: DesignSystem.getLabelMd(context, color: theme.defaultAccent),
               ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showAccountInfoDialog(BuildContext context, User? user, String name, String email) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFF1E1E1E),
+          title: const Text('Account Information', style: TextStyle(color: Colors.white)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Name: $name', style: const TextStyle(color: Colors.white70)),
+              const SizedBox(height: 8),
+              Text('Email: $email', style: const TextStyle(color: Colors.white70)),
+              const SizedBox(height: 8),
+              Text('User ID: ${user?.uid ?? "N/A"}', style: const TextStyle(color: Colors.white38, fontSize: 12)),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('CLOSE', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showCloudBackupDialog(BuildContext context, AppThemeData theme) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFF1E1E1E),
+          title: const Text('Cloud Backup', style: TextStyle(color: Colors.white)),
+          content: const Text(
+            'Cloud Synchronization is active. All of your focus sessions and stats are automatically backed up in real-time to Firestore database.',
+            style: TextStyle(color: Colors.white70),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('OK', style: TextStyle(color: theme.defaultAccent)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showExportDataDialog(BuildContext context, AppState appState, AppThemeData theme) {
+    final exportString = '{"streak": ${appState.streak}, "sessionsCount": ${appState.recentSessions.length}}';
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFF1E1E1E),
+          title: const Text('Export Focus Data', style: TextStyle(color: Colors.white)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'You can copy your focus session metadata below:',
+                style: TextStyle(color: Colors.white70),
+              ),
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.black26,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  exportString,
+                  style: const TextStyle(fontFamily: 'Courier', color: Colors.white60),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('CLOSE', style: TextStyle(color: theme.defaultAccent)),
             ),
           ],
         );

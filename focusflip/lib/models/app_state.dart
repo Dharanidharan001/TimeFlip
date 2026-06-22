@@ -2,6 +2,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/design_system.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class FocusSession {
   final String category;
@@ -23,8 +26,20 @@ class FocusSession {
 
 class AppState extends ChangeNotifier {
   bool _isLoggedIn;
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
 
-  AppState({this._isLoggedIn = false});
+  AppState({bool isLoggedIn = false}) : _isLoggedIn = isLoggedIn {
+    _isLoggedIn = isLoggedIn || FirebaseAuth.instance.currentUser != null;
+    FirebaseAuth.instance.authStateChanges().listen((User? user) {
+      _isLoggedIn = user != null;
+      if (user != null) {
+        _loadUserData(user.uid);
+      } else {
+        _clearUserData();
+      }
+      notifyListeners();
+    });
+  }
 
   bool get isLoggedIn => _isLoggedIn;
 
@@ -33,6 +48,24 @@ class AppState extends ChangeNotifier {
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('is_logged_in', true);
+  }
+
+  Future<void> logout() async {
+    _isLoggedIn = false;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('is_logged_in', false);
+    await FirebaseAuth.instance.signOut();
+    try {
+      final googleSignIn = GoogleSignIn(
+        clientId: '933796135635-h78ct5652e784u5md4124pu6oe97slvm.apps.googleusercontent.com',
+      );
+      if (await googleSignIn.isSignedIn()) {
+        await googleSignIn.signOut();
+      }
+    } catch (e) {
+      debugPrint("Error signing out Google client: $e");
+    }
   }
 
   // Navigation & UI state
@@ -102,10 +135,10 @@ class AppState extends ChangeNotifier {
   Timer? _timer;
 
   // Streak & Metrics
-  final int _streak = 12;
+  int _streak = 0;
   int get streak => _streak;
 
-  Duration _todayTotalFocus = const Duration(hours: 2, minutes: 45);
+  Duration _todayTotalFocus = Duration.zero;
   Duration get todayTotalFocus => _todayTotalFocus;
 
   String _activeCategory = 'Coding';
@@ -126,42 +159,79 @@ class AppState extends ChangeNotifier {
   }
 
   // Sessions log
-  final List<FocusSession> _recentSessions = [
-    FocusSession(
-      category: 'Coding',
-      title: 'Coding - App Setup & UI',
-      duration: const Duration(minutes: 50),
-      timeDisplay: '2h ago',
-      timestamp: DateTime.now().subtract(const Duration(hours: 2)),
-    ),
-  ];
+  List<FocusSession> _recentSessions = [];
   List<FocusSession> get recentSessions => List.unmodifiable(_recentSessions);
 
-  final List<FocusSession> _timelineSessions = [
-    FocusSession(
-      category: 'Physics',
-      title: 'Physics - Quantum Mechanics',
-      duration: const Duration(hours: 2, minutes: 15),
-      timeDisplay: '08:00',
-      timestamp: DateTime.now().subtract(const Duration(hours: 5)),
-    ),
-    FocusSession(
-      category: 'Coding',
-      title: 'Coding - Algorithms',
-      duration: const Duration(hours: 1, minutes: 45),
-      timeDisplay: '10:30',
-      timestamp: DateTime.now().subtract(const Duration(hours: 3)),
-    ),
-    FocusSession(
-      category: 'Reading',
-      title: 'Reading - Literature Review',
-      duration: const Duration(minutes: 42),
-      targetDuration: const Duration(hours: 1),
-      timeDisplay: 'Now',
-      timestamp: DateTime.now(),
-    ),
-  ];
+  List<FocusSession> _timelineSessions = [];
   List<FocusSession> get timelineSessions => List.unmodifiable(_timelineSessions);
+
+  void setInitialTimerDuration(Duration duration) {
+    _initialTimerDuration = duration;
+    _currentTimerDuration = duration;
+    notifyListeners();
+  }
+
+  String _formatTimeDisplay(DateTime timestamp) {
+    final now = DateTime.now();
+    final difference = now.difference(timestamp);
+    if (difference.inMinutes < 60) {
+      if (difference.inMinutes <= 0) return 'Just now';
+      return '${difference.inMinutes}m ago';
+    } else if (difference.inHours < 24) {
+      return '${difference.inHours}h ago';
+    } else {
+      final day = timestamp.day.toString().padLeft(2, '0');
+      final month = timestamp.month.toString().padLeft(2, '0');
+      return '$day/$month';
+    }
+  }
+
+  Future<void> _loadUserData(String uid) async {
+    try {
+      final userDoc = await _db.collection('users').doc(uid).get();
+      if (userDoc.exists) {
+        final data = userDoc.data()!;
+        _streak = data['streak'] ?? 0;
+        _todayTotalFocus = Duration(seconds: data['todayTotalFocusSeconds'] ?? 0);
+      } else {
+        _streak = 0;
+        _todayTotalFocus = Duration.zero;
+      }
+
+      final sessionsQuery = await _db
+          .collection('users')
+          .doc(uid)
+          .collection('sessions')
+          .orderBy('timestamp', descending: true)
+          .limit(20)
+          .get();
+
+      _recentSessions = sessionsQuery.docs.map((doc) {
+        final data = doc.data();
+        final timestamp = (data['timestamp'] as Timestamp).toDate();
+        return FocusSession(
+          category: data['category'] ?? 'Coding',
+          title: data['title'] ?? '',
+          duration: Duration(seconds: data['durationSeconds'] ?? 0),
+          timeDisplay: _formatTimeDisplay(timestamp),
+          timestamp: timestamp,
+        );
+      }).toList();
+
+      _timelineSessions = List.from(_recentSessions);
+      notifyListeners();
+    } catch (e) {
+      debugPrint("Error loading user data: $e");
+    }
+  }
+
+  void _clearUserData() {
+    _streak = 0;
+    _todayTotalFocus = Duration.zero;
+    _recentSessions = [];
+    _timelineSessions = [];
+    notifyListeners();
+  }
 
   // Focus progress (relative progress of currently running timer)
   double get focusProgressPercent {
@@ -200,7 +270,6 @@ class AppState extends ChangeNotifier {
     if (saveCompleted) {
       final elapsed = _initialTimerDuration - _currentTimerDuration;
       if (elapsed.inSeconds > 1) {
-        // Update today's total
         _todayTotalFocus += elapsed;
         
         final newSession = FocusSession(
@@ -212,6 +281,23 @@ class AppState extends ChangeNotifier {
         );
         _recentSessions.insert(0, newSession);
         _timelineSessions.insert(0, newSession);
+        
+        final user = FirebaseAuth.instance.currentUser;
+        if (user != null) {
+          _db.collection('users').doc(user.uid).collection('sessions').add({
+            'category': newSession.category,
+            'title': newSession.title,
+            'durationSeconds': newSession.duration.inSeconds,
+            'timestamp': Timestamp.fromDate(newSession.timestamp),
+          });
+
+          _streak = _streak == 0 ? 1 : _streak; // Set streak to 1 if first session
+          _db.collection('users').doc(user.uid).set({
+            'streak': _streak,
+            'todayTotalFocusSeconds': _todayTotalFocus.inSeconds,
+            'lastFocusDate': DateTime.now().toIso8601String().substring(0, 10),
+          }, SetOptions(merge: true));
+        }
       }
     }
     _isTimerRunning = false;

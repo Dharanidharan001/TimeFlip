@@ -5,6 +5,7 @@ import '../../theme/design_system.dart';
 import '../../widgets/glass_card.dart';
 import 'sign_up_screen.dart';
 import '../../google_auth.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
@@ -26,13 +27,35 @@ class _SignInScreenState extends State<SignInScreen> {
     super.dispose();
   }
 
-  void _handleSignIn() {
+  void _handleSignIn() async {
+    final theme = Provider.of<AppState>(context, listen: false).theme;
     if (_formKey.currentState!.validate()) {
-      // Access AppState and trigger login
-      final appState = Provider.of<AppState>(context, listen: false);
-      appState.login();
-      if (mounted) {
+      try {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => const Center(child: CircularProgressIndicator()),
+        );
+
+        await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: _emailController.text.trim(),
+          password: _passwordController.text,
+        );
+
+        if (!mounted) return;
+        Navigator.of(context).pop(); // Dismiss loading
+
         Navigator.of(context).popUntil((route) => route.isFirst);
+      } catch (e) {
+        if (!mounted) return;
+        Navigator.of(context).pop(); // Dismiss loading
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Sign In Failed: ${e.toString().split(']').last.trim()}"),
+            backgroundColor: theme.error,
+          ),
+        );
       }
     }
   }
