@@ -4,6 +4,7 @@ import '../../models/app_state.dart';
 import '../../theme/design_system.dart';
 import '../../widgets/glass_card.dart';
 import 'sign_up_screen.dart';
+import '../../google_auth.dart';
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
@@ -309,9 +310,24 @@ class _SignInScreenState extends State<SignInScreen> {
 
                         // Google button
                         OutlinedButton(
-                          onPressed: () {
-                            Provider.of<AppState>(context, listen: false).login();
-                          },
+                          onPressed: () async {
+  try {
+    final result = await signInWithGoogle();
+
+    if (result != null) {
+      Provider.of<AppState>(
+        context,
+        listen: false,
+      ).login();
+    }
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text("$e"),
+      ),
+    );
+  }
+},
                           style: OutlinedButton.styleFrom(
                             side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
                             padding: const EdgeInsets.symmetric(vertical: 16),

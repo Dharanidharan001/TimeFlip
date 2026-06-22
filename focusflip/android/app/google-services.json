@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "933796135635",
+    "project_id": "timeflip-e3747",
+    "storage_bucket": "timeflip-e3747.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:933796135635:android:efa8a5f64b2a9271680a26",
+        "android_client_info": {
+          "package_name": "com.focusflip.focusflip"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "933796135635-mmva97nrqffng2f259gn4maaovagbb7h.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.focusflip.focusflip",
+            "certificate_hash": "58cf8687ccd3bd5885a9e21cf38d531ac9f511ba"
+          }
+        },
+        {
+          "client_id": "933796135635-h78ct5652e784u5md4124pu6oe97slvm.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAIdP6TIcCKFP-sVnuhDPEb6_eDycfdesA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "933796135635-h78ct5652e784u5md4124pu6oe97slvm.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
