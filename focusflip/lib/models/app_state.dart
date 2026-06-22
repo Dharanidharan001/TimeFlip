@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/design_system.dart';
 
 class FocusSession {
@@ -21,6 +22,19 @@ class FocusSession {
 }
 
 class AppState extends ChangeNotifier {
+  bool _isLoggedIn;
+
+  AppState({this._isLoggedIn = false});
+
+  bool get isLoggedIn => _isLoggedIn;
+
+  Future<void> login() async {
+    _isLoggedIn = true;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('is_logged_in', true);
+  }
+
   // Navigation & UI state
   int _activeTab = 0;
   int get activeTab => _activeTab;
