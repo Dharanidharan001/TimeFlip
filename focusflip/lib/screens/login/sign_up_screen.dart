@@ -35,6 +35,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
       // Access AppState and trigger login/sign up
       final appState = Provider.of<AppState>(context, listen: false);
       appState.login();
+      if (mounted) {
+        Navigator.of(context).popUntil((route) => route.isFirst);
+      }
     }
   }
 

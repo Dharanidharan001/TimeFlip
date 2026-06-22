@@ -31,6 +31,9 @@ class _SignInScreenState extends State<SignInScreen> {
       // Access AppState and trigger login
       final appState = Provider.of<AppState>(context, listen: false);
       appState.login();
+      if (mounted) {
+        Navigator.of(context).popUntil((route) => route.isFirst);
+      }
     }
   }
 
@@ -320,6 +323,9 @@ class _SignInScreenState extends State<SignInScreen> {
                                   context,
                                   listen: false,
                                 ).login();
+                                if (context.mounted) {
+                                  Navigator.of(context).popUntil((route) => route.isFirst);
+                                }
                               }
                             } catch (e) {
                               if (!context.mounted) return;
@@ -360,6 +366,9 @@ class _SignInScreenState extends State<SignInScreen> {
                         OutlinedButton(
                           onPressed: () {
                             Provider.of<AppState>(context, listen: false).login();
+                            if (context.mounted) {
+                              Navigator.of(context).popUntil((route) => route.isFirst);
+                            }
                           },
                           style: OutlinedButton.styleFrom(
                             side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
