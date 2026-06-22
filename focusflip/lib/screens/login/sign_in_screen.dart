@@ -311,23 +311,25 @@ class _SignInScreenState extends State<SignInScreen> {
                         // Google button
                         OutlinedButton(
                           onPressed: () async {
-  try {
-    final result = await signInWithGoogle();
+                            try {
+                              final result = await signInWithGoogle();
+                              if (!context.mounted) return;
 
-    if (result != null) {
-      Provider.of<AppState>(
-        context,
-        listen: false,
-      ).login();
-    }
-  } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text("$e"),
-      ),
-    );
-  }
-},
+                              if (result != null) {
+                                Provider.of<AppState>(
+                                  context,
+                                  listen: false,
+                                ).login();
+                              }
+                            } catch (e) {
+                              if (!context.mounted) return;
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text("$e"),
+                                ),
+                              );
+                            }
+                          },
                           style: OutlinedButton.styleFrom(
                             side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
                             padding: const EdgeInsets.symmetric(vertical: 16),
