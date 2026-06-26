@@ -3,6 +3,8 @@
 import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
 import 'package:flutter/foundation.dart'
     show defaultTargetPlatform, kIsWeb, TargetPlatform;
+import 'dart:convert' show jsonDecode;
+import 'package:flutter/services.dart' show rootBundle;
 
 /// Default [FirebaseOptions] for use with your Firebase apps.
 ///
@@ -15,17 +17,69 @@ import 'package:flutter/foundation.dart'
 /// );
 /// ```
 class DefaultFirebaseOptions {
+  static String? webApiKeyOverride;
+  static String? androidApiKeyOverride;
+  static String? iosApiKeyOverride;
+
+  static Future<void> loadSecrets() async {
+    if (const bool.fromEnvironment('FLUTTER_TEST')) return;
+    try {
+      final String response = await rootBundle.loadString('secrets.json');
+      final Map<String, dynamic> secrets = jsonDecode(response) as Map<String, dynamic>;
+      webApiKeyOverride = secrets['FIREBASE_API_KEY_WEB'] as String?;
+      androidApiKeyOverride = secrets['FIREBASE_API_KEY_ANDROID'] as String?;
+      iosApiKeyOverride = secrets['FIREBASE_API_KEY_IOS'] as String?;
+    } catch (e) {
+      print('FAILED TO DYNAMICALLY LOAD SECRETS: $e');
+    }
+  }
+
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
-      _checkKeys('web', web.apiKey);
+      final apiKey = webApiKeyOverride ?? web.apiKey;
+      _checkKeys('web', apiKey);
+      if (webApiKeyOverride != null) {
+        return FirebaseOptions(
+          apiKey: webApiKeyOverride!,
+          appId: web.appId,
+          messagingSenderId: web.messagingSenderId,
+          projectId: web.projectId,
+          authDomain: web.authDomain,
+          storageBucket: web.storageBucket,
+          measurementId: web.measurementId,
+        );
+      }
       return web;
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
-        _checkKeys('android', android.apiKey);
+        final apiKey = androidApiKeyOverride ?? android.apiKey;
+        _checkKeys('android', apiKey);
+        if (androidApiKeyOverride != null) {
+          return FirebaseOptions(
+            apiKey: androidApiKeyOverride!,
+            appId: android.appId,
+            messagingSenderId: android.messagingSenderId,
+            projectId: android.projectId,
+            storageBucket: android.storageBucket,
+          );
+        }
         return android;
       case TargetPlatform.iOS:
-        _checkKeys('ios', ios.apiKey);
+        final apiKey = iosApiKeyOverride ?? ios.apiKey;
+        _checkKeys('ios', apiKey);
+        if (iosApiKeyOverride != null) {
+          return FirebaseOptions(
+            apiKey: iosApiKeyOverride!,
+            appId: ios.appId,
+            messagingSenderId: ios.messagingSenderId,
+            projectId: ios.projectId,
+            storageBucket: ios.storageBucket,
+            androidClientId: ios.androidClientId,
+            iosClientId: ios.iosClientId,
+            iosBundleId: ios.iosBundleId,
+          );
+        }
         return ios;
       case TargetPlatform.macOS:
         throw UnsupportedError(
@@ -58,6 +112,7 @@ class DefaultFirebaseOptions {
       );
     }
   }
+
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: const String.fromEnvironment('FIREBASE_API_KEY_ANDROID'),
