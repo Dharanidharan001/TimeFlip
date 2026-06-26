@@ -23,10 +23,7 @@ class DefaultFirebaseOptions {
       case TargetPlatform.android:
         return android;
       case TargetPlatform.iOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for ios - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return ios;
       case TargetPlatform.macOS:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for macos - '
@@ -56,7 +53,6 @@ class DefaultFirebaseOptions {
     projectId: 'timeflip-e3747',
     storageBucket: 'timeflip-e3747.firebasestorage.app',
   );
-
   static const FirebaseOptions web = FirebaseOptions(
     apiKey: 'AIzaSyAJ3LPLJjZ2kRrbbkysRHoNNzPpqEBm4QI',
     appId: '1:933796135635:web:8d2c71e0b703b142680a26',
@@ -65,5 +61,16 @@ class DefaultFirebaseOptions {
     authDomain: 'timeflip-e3747.firebaseapp.com',
     storageBucket: 'timeflip-e3747.firebasestorage.app',
     measurementId: 'G-4Z8H57LB60',
+  );
+
+  static const FirebaseOptions ios = FirebaseOptions(
+    apiKey: 'AIzaSyDn0eR2VUSW8viHk2UeZza12InpppfNWIs',
+    appId: '1:933796135635:ios:f0d20a894cab0521680a26',
+    messagingSenderId: '933796135635',
+    projectId: 'timeflip-e3747',
+    storageBucket: 'timeflip-e3747.firebasestorage.app',
+    androidClientId: '933796135635-mmva97nrqffng2f259gn4maaovagbb7h.apps.googleusercontent.com',
+    iosClientId: '933796135635-ppi5gcnd38v578e7ah1rfl5rc4hue6pa.apps.googleusercontent.com',
+    iosBundleId: 'com.focusflip.focusflip',
   );
 }
