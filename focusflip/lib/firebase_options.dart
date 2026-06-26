@@ -50,7 +50,7 @@ class DefaultFirebaseOptions {
   }
 
   static void _checkKeys(String platform, String apiKey) {
-    if (apiKey.isEmpty) {
+    if (apiKey.isEmpty && !const bool.fromEnvironment('FLUTTER_TEST')) {
       throw UnsupportedError(
         'Firebase API Key for $platform is not configured. '
         'Please create a secrets.json file in the root of the project with '
