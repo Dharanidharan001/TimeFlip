@@ -17,12 +17,15 @@ import 'package:flutter/foundation.dart'
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
+      _checkKeys('web', web.apiKey);
       return web;
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
+        _checkKeys('android', android.apiKey);
         return android;
       case TargetPlatform.iOS:
+        _checkKeys('ios', ios.apiKey);
         return ios;
       case TargetPlatform.macOS:
         throw UnsupportedError(
@@ -46,15 +49,25 @@ class DefaultFirebaseOptions {
     }
   }
 
+  static void _checkKeys(String platform, String apiKey) {
+    if (apiKey.isEmpty) {
+      throw UnsupportedError(
+        'Firebase API Key for $platform is not configured. '
+        'Please create a secrets.json file in the root of the project with '
+        'your keys and run the app with --dart-define-from-file=secrets.json.',
+      );
+    }
+  }
+
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyAIdP6TIcCKFP-sVnuhDPEb6_eDycfdesA',
+    apiKey: const String.fromEnvironment('FIREBASE_API_KEY_ANDROID'),
     appId: '1:933796135635:android:efa8a5f64b2a9271680a26',
     messagingSenderId: '933796135635',
     projectId: 'timeflip-e3747',
     storageBucket: 'timeflip-e3747.firebasestorage.app',
   );
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyAJ3LPLJjZ2kRrbbkysRHoNNzPpqEBm4QI',
+    apiKey: const String.fromEnvironment('FIREBASE_API_KEY_WEB'),
     appId: '1:933796135635:web:8d2c71e0b703b142680a26',
     messagingSenderId: '933796135635',
     projectId: 'timeflip-e3747',
@@ -64,7 +77,7 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyDn0eR2VUSW8viHk2UeZza12InpppfNWIs',
+    apiKey: const String.fromEnvironment('FIREBASE_API_KEY_IOS'),
     appId: '1:933796135635:ios:f0d20a894cab0521680a26',
     messagingSenderId: '933796135635',
     projectId: 'timeflip-e3747',
