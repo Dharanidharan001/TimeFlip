@@ -1,5 +1,7 @@
 # 🌌 FocusFlip (TimeFlip)
 
+🔗 **[Live Demo / Web App](https://timeflip-e3747.web.app/)**
+
 > **Master your time, shape your focus.**  
 > A premium, minimalist, and glassmorphic focus companion built with Flutter and Firebase, designed to foster deep work, visual timeline tracking, and habit building.
 
