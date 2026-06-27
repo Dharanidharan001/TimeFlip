@@ -39,7 +39,7 @@ class StatsScreen extends StatelessWidget {
                     'FocusFlip',
                     style: DesignSystem.getHeadlineMd(
                       context,
-                      color: Colors.white,
+                      color: theme.onSurface,
                     ).copyWith(letterSpacing: -1.0, fontWeight: FontWeight.bold),
                   ),
                 ],
@@ -59,7 +59,7 @@ class StatsScreen extends StatelessWidget {
                 _formatDuration(appState.todayTotalFocus),
                 style: DesignSystem.getHeadlineLg(
                   context,
-                  color: Colors.white,
+                  color: theme.onSurface,
                 ).copyWith(fontSize: 48, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 12),
@@ -102,7 +102,7 @@ class StatsScreen extends StatelessWidget {
                   ),
                   Text(
                     '$goalPercent%',
-                    style: DesignSystem.getLabelMd(context, color: Colors.white),
+                    style: DesignSystem.getLabelMd(context, color: theme.onSurface),
                   ),
                 ],
               ),
@@ -112,7 +112,7 @@ class StatsScreen extends StatelessWidget {
                 child: LinearProgressIndicator(
                   value: (todayHours / dailyGoalHours).clamp(0.0, 1.0),
                   minHeight: 8,
-                  backgroundColor: const Color(0x1AFFFFFF),
+                  backgroundColor: theme.onSurface.withValues(alpha: 0.1),
                   valueColor: AlwaysStoppedAnimation<Color>(theme.defaultAccent),
                 ),
               ),
@@ -127,10 +127,10 @@ class StatsScreen extends StatelessWidget {
                 physics: const NeverScrollableScrollPhysics(),
                 childAspectRatio: 1.5,
                 children: [
-                  _buildStatCard(context, 'This Week', '32h 15m', theme),
-                  _buildStatCard(context, 'This Month', '112h', theme),
-                  _buildStatCard(context, 'Sessions', '42', theme),
-                  _buildStatCard(context, 'Avg. Session', '45m', theme),
+                  _buildStatCard(context, 'This Week', _formatDuration(appState.thisWeekFocus), theme),
+                  _buildStatCard(context, 'This Month', _formatDuration(appState.thisMonthFocus), theme),
+                  _buildStatCard(context, 'Sessions', '${appState.totalSessionsCount}', theme),
+                  _buildStatCard(context, 'Avg. Session', _formatDuration(appState.averageSessionDuration), theme),
                 ],
               ),
               const SizedBox(height: 24),
@@ -151,12 +151,12 @@ class StatsScreen extends StatelessWidget {
                               'Weekly Overview',
                               style: DesignSystem.getBodyLg(
                                 context,
-                                color: Colors.white,
+                                color: theme.onSurface,
                               ).copyWith(fontWeight: FontWeight.w600),
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              'Avg 4h 30m / day',
+                              'Avg ${_formatDuration(Duration(minutes: (appState.averageDailyFocusHoursThisWeek * 60).round()))} / day',
                               style: DesignSystem.getLabelSm(
                                 context,
                                 color: theme.onSurfaceMuted,
@@ -171,7 +171,7 @@ class StatsScreen extends StatelessWidget {
                             borderRadius: BorderRadius.circular(99),
                           ),
                           child: Text(
-                            '+12%',
+                            appState.weeklyTrendPercent,
                             style: DesignSystem.getLabelSm(
                               context,
                               color: theme.defaultAccent,
@@ -182,7 +182,8 @@ class StatsScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 24),
                     WeeklyBarChart(
-                      weeklyHours: const [4.0, 3.5, 6.0, 5.0, 4.5, 2.0, 3.0],
+                      weeklyHours: appState.weeklyOverviewHours,
+                      maxHours: appState.weeklyOverviewHours.fold(8.0, (max, h) => h > max ? h : max),
                       barColor: theme.defaultAccent,
                     ),
                   ],
@@ -200,16 +201,16 @@ class StatsScreen extends StatelessWidget {
                       'Subjects',
                       style: DesignSystem.getBodyLg(
                         context,
-                        color: Colors.white,
+                        color: theme.onSurface,
                       ).copyWith(fontWeight: FontWeight.w600),
                     ),
                     const SizedBox(height: 24),
                     Row(
                       children: [
                         SubjectsDonutChart(
-                          physicsPercent: 0.40,
-                          codingPercent: 0.35,
-                          readingPercent: 0.25,
+                          studyPercent: appState.studyPercentage,
+                          codingPercent: appState.codingPercentage,
+                          readingPercent: appState.readingPercentage,
                           accentColor: theme.defaultAccent,
                         ),
                         const SizedBox(width: 32),
@@ -217,11 +218,11 @@ class StatsScreen extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              _buildLegendItem(context, 'Physics', '40%', theme.defaultAccent),
+                              _buildLegendItem(context, 'Study', '${(appState.studyPercentage * 100).round()}%', theme.defaultAccent, theme),
                               const SizedBox(height: 12),
-                              _buildLegendItem(context, 'Coding', '35%', Colors.white.withValues(alpha: 0.5)),
+                              _buildLegendItem(context, 'Coding', '${(appState.codingPercentage * 100).round()}%', theme.onSurface.withValues(alpha: 0.4), theme),
                               const SizedBox(height: 12),
-                              _buildLegendItem(context, 'Reading', '25%', Colors.white.withValues(alpha: 0.15)),
+                              _buildLegendItem(context, 'Reading', '${(appState.readingPercentage * 100).round()}%', theme.onSurface.withValues(alpha: 0.15), theme),
                             ],
                           ),
                         ),
@@ -232,7 +233,7 @@ class StatsScreen extends StatelessWidget {
               ),
               const SizedBox(height: 24),
 
-              // 8 Day Streak Card
+              // Streak Card
               GlassCard(
                 padding: const EdgeInsets.all(20.0),
                 child: Row(
@@ -241,9 +242,9 @@ class StatsScreen extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: const Color(0x0AFFFFFF),
+                        color: theme.onSurface.withValues(alpha: 0.04),
                         shape: BoxShape.circle,
-                        border: Border.all(color: const Color(0x1AFFFFFF)),
+                        border: Border.all(color: theme.outline.withValues(alpha: 0.2)),
                       ),
                       child: Icon(
                         Icons.local_fire_department,
@@ -260,19 +261,19 @@ class StatsScreen extends StatelessWidget {
                             '${appState.streak} Day Streak',
                             style: DesignSystem.getBodyLg(
                               context,
-                              color: Colors.white,
+                              color: theme.onSurface,
                             ).copyWith(fontWeight: FontWeight.w600),
                           ),
                           const SizedBox(height: 4),
                           Row(
                             children: [
                               Text(
-                                'Best: 21 Days',
+                                'Best: ${appState.bestStreak} Days',
                                 style: DesignSystem.getLabelSm(context, color: theme.onSurfaceMuted),
                               ),
                               const SizedBox(width: 12),
                               Text(
-                                'Rate: 87%',
+                                'Rate: ${appState.weeklyConsistencyRate}%',
                                 style: DesignSystem.getLabelSm(context, color: theme.onSurfaceMuted),
                               ),
                             ],
@@ -282,13 +283,13 @@ class StatsScreen extends StatelessWidget {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              _buildStreakDayBox(context, 'M', true, theme.defaultAccent),
-                              _buildStreakDayBox(context, 'T', true, theme.defaultAccent),
-                              _buildStreakDayBox(context, 'W', true, theme.defaultAccent),
-                              _buildStreakDayBox(context, 'T', true, theme.defaultAccent),
-                              _buildStreakDayBox(context, 'F', false, theme.defaultAccent),
-                              _buildStreakDayBox(context, 'S', false, theme.defaultAccent),
-                              _buildStreakDayBox(context, 'S', false, theme.defaultAccent),
+                              _buildStreakDayBox(context, 'M', appState.weeklyChecklist[0], theme.defaultAccent),
+                              _buildStreakDayBox(context, 'T', appState.weeklyChecklist[1], theme.defaultAccent),
+                              _buildStreakDayBox(context, 'W', appState.weeklyChecklist[2], theme.defaultAccent),
+                              _buildStreakDayBox(context, 'T', appState.weeklyChecklist[3], theme.defaultAccent),
+                              _buildStreakDayBox(context, 'F', appState.weeklyChecklist[4], theme.defaultAccent),
+                              _buildStreakDayBox(context, 'S', appState.weeklyChecklist[5], theme.defaultAccent),
+                              _buildStreakDayBox(context, 'S', appState.weeklyChecklist[6], theme.defaultAccent),
                             ],
                           ),
                           const SizedBox(height: 12),
@@ -317,7 +318,7 @@ class StatsScreen extends StatelessWidget {
                       'Insights',
                       style: DesignSystem.getBodyLg(
                         context,
-                        color: Colors.white,
+                        color: theme.onSurface,
                       ).copyWith(fontWeight: FontWeight.w600),
                     ),
                     const SizedBox(height: 20),
@@ -325,16 +326,18 @@ class StatsScreen extends StatelessWidget {
                       context: context,
                       icon: Icons.schedule,
                       title: 'Peak Focus Time',
-                      detail: '7 PM – 10 PM',
+                      detail: appState.peakFocusTime,
                       accentColor: theme.defaultAccent,
+                      theme: theme,
                     ),
-                    const Divider(color: Color(0x1AFFFFFF), height: 32),
+                    Divider(color: theme.outline.withValues(alpha: 0.15), height: 32),
                     _buildInsightRow(
                       context: context,
                       icon: Icons.trending_up,
                       title: 'Productivity Trend',
-                      detail: 'Increasing (+5% this week)',
+                      detail: appState.productivityTrend,
                       accentColor: theme.defaultAccent,
+                      theme: theme,
                     ),
                   ],
                 ),
@@ -351,7 +354,7 @@ class StatsScreen extends StatelessWidget {
                       "Today's Timeline",
                       style: DesignSystem.getBodyLg(
                         context,
-                        color: Colors.white,
+                        color: theme.onSurface,
                       ).copyWith(fontWeight: FontWeight.w600),
                     ),
                     const SizedBox(height: 24),
@@ -387,7 +390,9 @@ class StatsScreen extends StatelessWidget {
                       icon: Icons.emoji_events,
                       iconColor: Colors.amber,
                       title: 'First 10 Hours',
-                      subtitle: 'Completed',
+                      subtitle: appState.totalFocusHours >= 10
+                          ? 'Completed'
+                          : '${appState.totalFocusHours.toStringAsFixed(1)}h / 10h',
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -397,7 +402,9 @@ class StatsScreen extends StatelessWidget {
                       icon: Icons.local_fire_department,
                       iconColor: Colors.orange,
                       title: '7 Day Streak',
-                      subtitle: 'Unlocked Today',
+                      subtitle: appState.bestStreak >= 7
+                          ? 'Completed'
+                          : '${appState.bestStreak}d / 7d',
                     ),
                   ),
                 ],
@@ -469,7 +476,7 @@ class StatsScreen extends StatelessWidget {
             value,
             style: DesignSystem.getBodyLg(
               context,
-              color: Colors.white,
+              color: theme.onSurface,
             ).copyWith(fontWeight: FontWeight.bold),
           ),
         ],
@@ -477,7 +484,7 @@ class StatsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildLegendItem(BuildContext context, String label, String value, Color color) {
+  Widget _buildLegendItem(BuildContext context, String label, String value, Color color, AppThemeData theme) {
     return Row(
       children: [
         Container(
@@ -493,7 +500,7 @@ class StatsScreen extends StatelessWidget {
           label,
           style: DesignSystem.getBodyMd(
             context,
-            color: Colors.white.withValues(alpha: 0.8),
+            color: theme.onSurface.withValues(alpha: 0.8),
           ),
         ),
         const Spacer(),
@@ -501,7 +508,7 @@ class StatsScreen extends StatelessWidget {
           value,
           style: DesignSystem.getLabelMd(
             context,
-            color: Colors.white,
+            color: theme.onSurface,
           ).copyWith(fontWeight: FontWeight.w600),
         ),
       ],
@@ -509,6 +516,7 @@ class StatsScreen extends StatelessWidget {
   }
 
   Widget _buildStreakDayBox(BuildContext context, String day, bool checked, Color activeColor) {
+    final theme = Provider.of<AppState>(context, listen: false).theme;
     if (checked) {
       return Container(
         width: 24,
@@ -532,7 +540,7 @@ class StatsScreen extends StatelessWidget {
             day,
             style: DesignSystem.getLabelSm(
               context,
-              color: Colors.white.withValues(alpha: 0.3),
+              color: theme.onSurface.withValues(alpha: 0.3),
             ),
           ),
         ),
@@ -546,6 +554,7 @@ class StatsScreen extends StatelessWidget {
     required String title,
     required String detail,
     required Color accentColor,
+    required AppThemeData theme,
   }) {
     return Row(
       children: [
@@ -558,7 +567,7 @@ class StatsScreen extends StatelessWidget {
               title,
               style: DesignSystem.getBodyMd(
                 context,
-                color: Colors.white.withValues(alpha: 0.6),
+                color: theme.onSurface.withValues(alpha: 0.6),
               ),
             ),
             const SizedBox(height: 2),
@@ -566,7 +575,7 @@ class StatsScreen extends StatelessWidget {
               detail,
               style: DesignSystem.getBodyMd(
                 context,
-                color: Colors.white,
+                color: theme.onSurface,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -585,8 +594,8 @@ class StatsScreen extends StatelessWidget {
   }) {
     Color getDotColor() {
       if (session.timeDisplay == 'Now') return accentColor;
-      if (session.category == 'Physics') return Colors.white;
-      return Colors.white.withValues(alpha: 0.3);
+      if (session.category == 'Physics' || session.category == 'Study') return theme.onSurface;
+      return theme.onSurface.withValues(alpha: 0.3);
     }
 
     return IntrinsicHeight(
@@ -620,7 +629,7 @@ class StatsScreen extends StatelessWidget {
                 Expanded(
                   child: Container(
                     width: 2,
-                    color: Colors.white.withValues(alpha: 0.1),
+                    color: theme.outline.withValues(alpha: 0.3),
                     margin: const EdgeInsets.symmetric(vertical: 4),
                   ),
                 ),
@@ -655,7 +664,7 @@ class StatsScreen extends StatelessWidget {
                               session.title,
                               style: DesignSystem.getBodyMd(
                                 context,
-                                color: Colors.white,
+                                color: theme.onSurface,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -690,6 +699,7 @@ class StatsScreen extends StatelessWidget {
     required String title,
     required String subtitle,
   }) {
+    final theme = Provider.of<AppState>(context, listen: false).theme;
     return GlassCard(
       padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
       child: Column(
@@ -700,7 +710,7 @@ class StatsScreen extends StatelessWidget {
             title,
             style: DesignSystem.getBodyMd(
               context,
-              color: Colors.white,
+              color: theme.onSurface,
               fontWeight: FontWeight.w600,
             ),
             textAlign: TextAlign.center,
@@ -710,7 +720,7 @@ class StatsScreen extends StatelessWidget {
             subtitle,
             style: DesignSystem.getLabelSm(
               context,
-              color: Colors.white.withValues(alpha: 0.5),
+              color: theme.onSurface.withValues(alpha: 0.5),
             ),
             textAlign: TextAlign.center,
           ),

@@ -34,9 +34,9 @@ class ProfileScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.02),
-              border: const Border(
-                bottom: BorderSide(color: Color(0x1AFFFFFF), width: 1.0),
+              color: theme.onSurface.withValues(alpha: 0.02),
+              border: Border(
+                bottom: BorderSide(color: theme.outline.withValues(alpha: 0.15), width: 1.0),
               ),
             ),
             child: Row(
@@ -48,7 +48,7 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 Text(
                   'FocusFlip',
-                  style: DesignSystem.getHeadlineMd(context, color: Colors.white).copyWith(
+                  style: DesignSystem.getHeadlineMd(context, color: theme.onSurface).copyWith(
                     fontWeight: FontWeight.bold,
                     letterSpacing: -1.0,
                   ),
@@ -102,7 +102,7 @@ class ProfileScreen extends StatelessWidget {
                                     errorBuilder: (context, error, stackTrace) => Center(
                                       child: Icon(
                                         Icons.person,
-                                        color: Colors.white.withValues(alpha: 0.6),
+                                        color: theme.onSurface.withValues(alpha: 0.6),
                                         size: 40,
                                       ),
                                     ),
@@ -113,7 +113,7 @@ class ProfileScreen extends StatelessWidget {
                                     errorBuilder: (context, error, stackTrace) => Center(
                                       child: Icon(
                                         Icons.person,
-                                        color: Colors.white.withValues(alpha: 0.6),
+                                        color: theme.onSurface.withValues(alpha: 0.6),
                                         size: 40,
                                       ),
                                     ),
@@ -125,7 +125,7 @@ class ProfileScreen extends StatelessWidget {
                           userName,
                           style: DesignSystem.getHeadlineMd(
                             context,
-                            color: Colors.white,
+                            color: theme.onSurface,
                           ).copyWith(fontWeight: FontWeight.w600),
                         ),
                         const SizedBox(height: 8),
@@ -142,7 +142,7 @@ class ProfileScreen extends StatelessWidget {
                                 'Pro Member',
                                 style: DesignSystem.getLabelSm(
                                   context,
-                                  color: Colors.black,
+                                  color: theme.defaultAccent.computeLuminance() > 0.5 ? Colors.black : Colors.white,
                                 ),
                               ),
                             ),
@@ -161,13 +161,13 @@ class ProfileScreen extends StatelessWidget {
                         OutlinedButton(
                           onPressed: () {},
                           style: OutlinedButton.styleFrom(
-                            side: const BorderSide(color: Color(0x33FFFFFF)),
+                            side: BorderSide(color: theme.outline.withValues(alpha: 0.3)),
                             shape: const StadiumBorder(),
                             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                           ),
                           child: Text(
                             'Edit Profile',
-                            style: DesignSystem.getLabelSm(context, color: Colors.white),
+                            style: DesignSystem.getLabelSm(context, color: theme.onSurface),
                           ),
                         ),
                       ],
@@ -196,7 +196,7 @@ class ProfileScreen extends StatelessWidget {
                           theme: theme,
                           onTap: () => _showAccountInfoDialog(context, user, userName, userEmail),
                         ),
-                        const Divider(color: Color(0x1AFFFFFF), height: 1),
+                        Divider(color: theme.outline.withValues(alpha: 0.15), height: 1),
                         _buildSettingsRow(
                           context: context,
                           icon: Icons.cloud_upload,
@@ -204,7 +204,7 @@ class ProfileScreen extends StatelessWidget {
                           theme: theme,
                           onTap: () => _showCloudBackupDialog(context, theme),
                         ),
-                        const Divider(color: Color(0x1AFFFFFF), height: 1),
+                        Divider(color: theme.outline.withValues(alpha: 0.15), height: 1),
                         _buildSettingsRow(
                           context: context,
                           icon: Icons.file_upload,
@@ -212,7 +212,13 @@ class ProfileScreen extends StatelessWidget {
                           theme: theme,
                           onTap: () => _showExportDataDialog(context, appState, theme),
                         ),
-                        const Divider(color: Color(0x1AFFFFFF), height: 1),
+                        Divider(color: theme.outline.withValues(alpha: 0.15), height: 1),
+                        _buildThemeModeSwitchRow(
+                          context: context,
+                          theme: theme,
+                          appState: appState,
+                        ),
+                        Divider(color: theme.outline.withValues(alpha: 0.15), height: 1),
                         _buildSettingsRow(
                           context: context,
                           icon: Icons.logout,
@@ -268,7 +274,7 @@ class ProfileScreen extends StatelessWidget {
                             height: 32,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              border: Border.all(color: Colors.white.withValues(alpha: 0.2), width: 2.0),
+                              border: Border.all(color: theme.onSurface.withValues(alpha: 0.2), width: 2.0),
                             ),
                           ),
                         ),
@@ -298,13 +304,21 @@ class ProfileScreen extends StatelessWidget {
                           title: 'Retro Flip',
                           bgPreviewColor: const Color(0xFF1B1B1B),
                           appState: appState,
-                          child: Text(
-                            '25:00',
-                            style: TextStyle(
-                              fontFamily: 'Geist',
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: const Color(0xFFF97316),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF2A2A2A),
+                              borderRadius: BorderRadius.circular(4),
+                              border: Border.all(color: theme.onSurface.withValues(alpha: 0.2)),
+                            ),
+                            child: const Text(
+                              '25:00',
+                              style: TextStyle(
+                                fontFamily: 'Geist',
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFFF97316),
+                              ),
                             ),
                           ),
                         ),
@@ -315,13 +329,26 @@ class ProfileScreen extends StatelessWidget {
                           title: 'Terminal',
                           bgPreviewColor: const Color(0xFF0D1117),
                           appState: appState,
-                          child: Text(
+                          child: const Text(
                             '> status: active',
                             style: TextStyle(
                               fontFamily: 'Geist',
                               fontSize: 8,
-                              color: const Color(0xFF238636),
+                              color: Color(0xFF238636),
                             ),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        _buildThemeCard(
+                          context: context,
+                          type: AppThemeType.light,
+                          title: 'Light Mode',
+                          bgPreviewColor: const Color(0xFFF3F4F6),
+                          appState: appState,
+                          child: const Icon(
+                            Icons.light_mode,
+                            color: Color(0xFF2563EB),
+                            size: 24,
                           ),
                         ),
                       ],
@@ -382,7 +409,7 @@ class ProfileScreen extends StatelessWidget {
                                     shape: BoxShape.circle,
                                     color: color,
                                     border: isSelected
-                                        ? Border.all(color: Colors.white, width: 2.0)
+                                        ? Border.all(color: theme.onSurface, width: 2.0)
                                         : null,
                                     boxShadow: isSelected
                                         ? [
@@ -406,12 +433,12 @@ class ProfileScreen extends StatelessWidget {
                                 height: 32,
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
-                                  color: Colors.white.withValues(alpha: 0.1),
-                                  border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
+                                  color: theme.onSurface.withValues(alpha: 0.1),
+                                  border: Border.all(color: theme.outline.withValues(alpha: 0.2)),
                                 ),
-                                child: const Icon(
+                                child: Icon(
                                   Icons.palette,
-                                  color: Colors.white,
+                                  color: theme.onSurface,
                                   size: 16,
                                 ),
                               ),
@@ -437,7 +464,7 @@ class ProfileScreen extends StatelessWidget {
                               appState.timerDisplayStyleLabel,
                               style: DesignSystem.getLabelSm(
                                 context,
-                                color: Colors.white,
+                                color: theme.onSurface,
                               ),
                             ),
                           ],
@@ -448,7 +475,7 @@ class ProfileScreen extends StatelessWidget {
                           min: 0,
                           max: 100,
                           activeColor: theme.defaultAccent,
-                          inactiveColor: Colors.white.withValues(alpha: 0.1),
+                          inactiveColor: theme.onSurface.withValues(alpha: 0.1),
                           onChanged: (val) => appState.setTimerDisplayStyle(val),
                         ),
                         Padding(
@@ -481,7 +508,7 @@ class ProfileScreen extends StatelessWidget {
                               appState.animationSpeedLabel,
                               style: DesignSystem.getLabelSm(
                                 context,
-                                color: Colors.white,
+                                color: theme.onSurface,
                               ),
                             ),
                           ],
@@ -492,7 +519,7 @@ class ProfileScreen extends StatelessWidget {
                           min: 0,
                           max: 100,
                           activeColor: theme.defaultAccent,
-                          inactiveColor: Colors.white.withValues(alpha: 0.1),
+                          inactiveColor: theme.onSurface.withValues(alpha: 0.1),
                           onChanged: (val) => appState.setAnimationSpeed(val),
                         ),
                         Padding(
@@ -538,12 +565,50 @@ class ProfileScreen extends StatelessWidget {
             Expanded(
               child: Text(
                 title,
-                style: DesignSystem.getBodyLg(context, color: textColor ?? Colors.white).copyWith(fontSize: 16),
+                style: DesignSystem.getBodyLg(context, color: textColor ?? theme.onSurface).copyWith(fontSize: 16),
               ),
             ),
             Icon(Icons.chevron_right, color: theme.onSurfaceMuted, size: 20),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildThemeModeSwitchRow({
+    required BuildContext context,
+    required AppThemeData theme,
+    required AppState appState,
+  }) {
+    final isLight = appState.activeThemeType == AppThemeType.light;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+      child: Row(
+        children: [
+          Icon(
+            isLight ? Icons.light_mode : Icons.dark_mode,
+            color: theme.defaultAccent,
+            size: 24,
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Text(
+              'Light Theme',
+              style: DesignSystem.getBodyLg(context, color: theme.onSurface).copyWith(fontSize: 16),
+            ),
+          ),
+          Switch(
+            value: isLight,
+            activeThumbColor: theme.defaultAccent,
+            onChanged: (val) {
+              if (val) {
+                appState.setTheme(AppThemeType.light);
+              } else {
+                appState.setTheme(AppThemeType.amoled);
+              }
+            },
+          ),
+        ],
       ),
     );
   }
@@ -564,9 +629,9 @@ class ProfileScreen extends StatelessWidget {
       child: Container(
         width: 150,
         decoration: BoxDecoration(
-          color: const Color(0x0AFFFFFF),
+          color: theme.surfaceContainer.withValues(alpha: 0.5),
           border: Border.all(
-            color: isSelected ? theme.defaultAccent : const Color(0x1AFFFFFF),
+            color: isSelected ? theme.defaultAccent : theme.outline.withValues(alpha: 0.2),
             width: 1.0,
           ),
           borderRadius: BorderRadius.circular(12),
@@ -581,7 +646,7 @@ class ProfileScreen extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: bgPreviewColor,
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+                  border: Border.all(color: theme.outline.withValues(alpha: 0.15)),
                 ),
                 child: Stack(
                   alignment: Alignment.center,
@@ -606,7 +671,7 @@ class ProfileScreen extends StatelessWidget {
               title,
               style: DesignSystem.getLabelSm(
                 context,
-                color: isSelected ? theme.defaultAccent : Colors.white,
+                color: isSelected ? theme.defaultAccent : theme.onSurface,
               ),
             ),
           ],
@@ -634,11 +699,11 @@ class ProfileScreen extends StatelessWidget {
           backgroundColor: theme.surface,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
-            side: const BorderSide(color: Color(0x1AFFFFFF)),
+            side: BorderSide(color: theme.outline.withValues(alpha: 0.2)),
           ),
           title: Text(
             'Custom Accent Color',
-            style: DesignSystem.getHeadlineMd(context, color: Colors.white),
+            style: DesignSystem.getHeadlineMd(context, color: theme.onSurface),
           ),
           content: Wrap(
             spacing: 12,
@@ -656,7 +721,7 @@ class ProfileScreen extends StatelessWidget {
                     shape: BoxShape.circle,
                     color: color,
                     border: appState.accentColor == color
-                        ? Border.all(color: Colors.white, width: 2.0)
+                        ? Border.all(color: theme.onSurface, width: 2.0)
                         : null,
                   ),
                 ),
@@ -678,27 +743,28 @@ class ProfileScreen extends StatelessWidget {
   }
 
   void _showAccountInfoDialog(BuildContext context, User? user, String name, String email) {
+    final theme = Provider.of<AppState>(context, listen: false).theme;
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          backgroundColor: const Color(0xFF1E1E1E),
-          title: const Text('Account Information', style: TextStyle(color: Colors.white)),
+          backgroundColor: theme.surface,
+          title: Text('Account Information', style: TextStyle(color: theme.onSurface)),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Name: $name', style: const TextStyle(color: Colors.white70)),
+              Text('Name: $name', style: TextStyle(color: theme.onSurface.withValues(alpha: 0.7))),
               const SizedBox(height: 8),
-              Text('Email: $email', style: const TextStyle(color: Colors.white70)),
+              Text('Email: $email', style: TextStyle(color: theme.onSurface.withValues(alpha: 0.7))),
               const SizedBox(height: 8),
-              Text('User ID: ${user?.uid ?? "N/A"}', style: const TextStyle(color: Colors.white38, fontSize: 12)),
+              Text('User ID: ${user?.uid ?? "N/A"}', style: TextStyle(color: theme.onSurface.withValues(alpha: 0.4), fontSize: 12)),
             ],
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('CLOSE', style: TextStyle(color: Colors.white)),
+              child: Text('CLOSE', style: TextStyle(color: theme.defaultAccent)),
             ),
           ],
         );
@@ -711,11 +777,11 @@ class ProfileScreen extends StatelessWidget {
       context: context,
       builder: (context) {
         return AlertDialog(
-          backgroundColor: const Color(0xFF1E1E1E),
-          title: const Text('Cloud Backup', style: TextStyle(color: Colors.white)),
-          content: const Text(
+          backgroundColor: theme.surface,
+          title: Text('Cloud Backup', style: TextStyle(color: theme.onSurface)),
+          content: Text(
             'Cloud Synchronization is active. All of your focus sessions and stats are automatically backed up in real-time to Firestore database.',
-            style: TextStyle(color: Colors.white70),
+            style: TextStyle(color: theme.onSurface.withValues(alpha: 0.7)),
           ),
           actions: [
             TextButton(
@@ -734,26 +800,26 @@ class ProfileScreen extends StatelessWidget {
       context: context,
       builder: (context) {
         return AlertDialog(
-          backgroundColor: const Color(0xFF1E1E1E),
-          title: const Text('Export Focus Data', style: TextStyle(color: Colors.white)),
+          backgroundColor: theme.surface,
+          title: Text('Export Focus Data', style: TextStyle(color: theme.onSurface)),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'You can copy your focus session metadata below:',
-                style: TextStyle(color: Colors.white70),
+                style: TextStyle(color: theme.onSurface.withValues(alpha: 0.7)),
               ),
               const SizedBox(height: 12),
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.black26,
+                  color: theme.surfaceContainer,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
                   exportString,
-                  style: const TextStyle(fontFamily: 'Courier', color: Colors.white60),
+                  style: TextStyle(fontFamily: 'Courier', color: theme.onSurface.withValues(alpha: 0.6)),
                 ),
               ),
             ],

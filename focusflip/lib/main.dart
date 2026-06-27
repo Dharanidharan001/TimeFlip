@@ -6,6 +6,7 @@ import 'screens/login/welcome_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'theme/design_system.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -38,15 +39,23 @@ class FocusFlipApp extends StatelessWidget {
       title: 'FocusFlip',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        brightness: Brightness.dark,
+        brightness: currentTheme.type == AppThemeType.light ? Brightness.light : Brightness.dark,
         scaffoldBackgroundColor: currentTheme.background,
-        colorScheme: ColorScheme.dark(
-          primary: currentTheme.defaultAccent,
-          secondary: currentTheme.surfaceContainer,
-          surface: currentTheme.surface,
-          onSurface: currentTheme.onSurface,
-          error: currentTheme.error,
-        ),
+        colorScheme: currentTheme.type == AppThemeType.light
+            ? ColorScheme.light(
+                primary: currentTheme.defaultAccent,
+                secondary: currentTheme.surfaceContainer,
+                surface: currentTheme.surface,
+                onSurface: currentTheme.onSurface,
+                error: currentTheme.error,
+              )
+            : ColorScheme.dark(
+                primary: currentTheme.defaultAccent,
+                secondary: currentTheme.surfaceContainer,
+                surface: currentTheme.surface,
+                onSurface: currentTheme.onSurface,
+                error: currentTheme.error,
+              ),
         useMaterial3: true,
       ),
       home: appState.isLoggedIn ? const MainLayout() : const WelcomeScreen(),

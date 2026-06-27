@@ -17,6 +17,7 @@ class WeeklyBarChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final weekdays = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+    final onSurface = Theme.of(context).colorScheme.onSurface;
 
     return Container(
       height: 180,
@@ -35,7 +36,7 @@ class WeeklyBarChart extends StatelessWidget {
                 Expanded(
                   child: LayoutBuilder(
                     builder: (context, constraints) {
-                      final barHeight = constraints.maxHeight * heightFactor;
+                       final barHeight = constraints.maxHeight * heightFactor;
                       return Column(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
@@ -66,7 +67,7 @@ class WeeklyBarChart extends StatelessWidget {
                   weekdays[index],
                   style: DesignSystem.getLabelSm(
                     context,
-                    color: Colors.white.withValues(alpha: 0.5),
+                    color: onSurface.withValues(alpha: 0.5),
                   ),
                 ),
               ],
@@ -79,14 +80,14 @@ class WeeklyBarChart extends StatelessWidget {
 }
 
 class SubjectsDonutChart extends StatelessWidget {
-  final double physicsPercent; // e.g. 0.40
+  final double studyPercent; // e.g. 0.40
   final double codingPercent;  // e.g. 0.35
   final double readingPercent; // e.g. 0.25
   final Color accentColor;
 
   const SubjectsDonutChart({
     super.key,
-    required this.physicsPercent,
+    required this.studyPercent,
     required this.codingPercent,
     required this.readingPercent,
     required this.accentColor,
@@ -94,6 +95,7 @@ class SubjectsDonutChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final onSurface = Theme.of(context).colorScheme.onSurface;
     return SizedBox(
       width: 150,
       height: 150,
@@ -103,10 +105,11 @@ class SubjectsDonutChart extends StatelessWidget {
           CustomPaint(
             size: const Size(140, 140),
             painter: _DonutPainter(
-              physicsPercent: physicsPercent,
+              studyPercent: studyPercent,
               codingPercent: codingPercent,
               readingPercent: readingPercent,
               accentColor: accentColor,
+              onSurfaceColor: onSurface,
             ),
           ),
           Column(
@@ -116,7 +119,7 @@ class SubjectsDonutChart extends StatelessWidget {
                 '100%',
                 style: DesignSystem.getLabelMd(
                   context,
-                  color: Colors.white,
+                  color: onSurface,
                   fontSize: 18,
                 ),
               ),
@@ -129,16 +132,18 @@ class SubjectsDonutChart extends StatelessWidget {
 }
 
 class _DonutPainter extends CustomPainter {
-  final double physicsPercent;
+  final double studyPercent;
   final double codingPercent;
   final double readingPercent;
   final Color accentColor;
+  final Color onSurfaceColor;
 
   _DonutPainter({
-    required this.physicsPercent,
+    required this.studyPercent,
     required this.codingPercent,
     required this.readingPercent,
     required this.accentColor,
+    required this.onSurfaceColor,
   });
 
   @override
@@ -148,7 +153,7 @@ class _DonutPainter extends CustomPainter {
     final rect = Rect.fromCircle(center: center, radius: radius);
     const strokeWidth = 16.0;
 
-    final paintPhysics = Paint()
+    final paintStudy = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = strokeWidth
       ..color = accentColor;
@@ -156,20 +161,20 @@ class _DonutPainter extends CustomPainter {
     final paintCoding = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = strokeWidth
-      ..color = Colors.white.withValues(alpha: 0.5);
+      ..color = onSurfaceColor.withValues(alpha: 0.4);
 
     final paintReading = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = strokeWidth
-      ..color = Colors.white.withValues(alpha: 0.15);
+      ..color = onSurfaceColor.withValues(alpha: 0.15);
 
     // Starting angle at top: -90 degrees (-pi/2)
     double startAngle = -math.pi / 2;
 
-    // 1. Physics Arc
-    double sweepAnglePhysics = 2 * math.pi * physicsPercent;
-    canvas.drawArc(rect, startAngle, sweepAnglePhysics, false, paintPhysics);
-    startAngle += sweepAnglePhysics;
+    // 1. Study Arc
+    double sweepAngleStudy = 2 * math.pi * studyPercent;
+    canvas.drawArc(rect, startAngle, sweepAngleStudy, false, paintStudy);
+    startAngle += sweepAngleStudy;
 
     // 2. Coding Arc
     double sweepAngleCoding = 2 * math.pi * codingPercent;
@@ -183,9 +188,10 @@ class _DonutPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _DonutPainter oldDelegate) {
-    return oldDelegate.physicsPercent != physicsPercent ||
+    return oldDelegate.studyPercent != studyPercent ||
         oldDelegate.codingPercent != codingPercent ||
         oldDelegate.readingPercent != readingPercent ||
-        oldDelegate.accentColor != accentColor;
+        oldDelegate.accentColor != accentColor ||
+        oldDelegate.onSurfaceColor != onSurfaceColor;
   }
 }

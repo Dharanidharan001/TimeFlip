@@ -93,7 +93,7 @@ class TimerScreen extends StatelessWidget {
                       message: 'Tap to change duration',
                       child: Text(
                         _formatTimerReadout(appState.initialTimerDuration),
-                        style: DesignSystem.getDisplay(context, color: Colors.white).copyWith(
+                        style: DesignSystem.getDisplay(context, color: theme.onSurface).copyWith(
                           fontSize: 72,
                           height: 1.0,
                         ),
@@ -118,6 +118,7 @@ class TimerScreen extends StatelessWidget {
                       label: cat,
                       isSelected: isSelected,
                       accentColor: theme.defaultAccent,
+                      theme: theme,
                       onTap: () => appState.setActiveCategory(cat),
                     );
                   }),
@@ -188,6 +189,7 @@ class TimerScreen extends StatelessWidget {
     required String label,
     required bool isSelected,
     required Color accentColor,
+    required AppThemeData theme,
     required VoidCallback onTap,
   }) {
     return GestureDetector(
@@ -207,7 +209,7 @@ class TimerScreen extends StatelessWidget {
           label,
           style: DesignSystem.getLabelMd(
             context,
-            color: isSelected ? accentColor : Colors.white,
+            color: isSelected ? accentColor : theme.onSurface,
           ),
         ),
       ),
@@ -215,6 +217,7 @@ class TimerScreen extends StatelessWidget {
   }
 
   Widget _buildAddCustomChip(BuildContext context, Color accentColor, AppState appState) {
+    final theme = appState.theme;
     return GestureDetector(
       onTap: () => _showCustomCategoryDialog(context, appState),
       child: Container(
@@ -230,11 +233,11 @@ class TimerScreen extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.add, color: Colors.white, size: 14),
+            Icon(Icons.add, color: theme.onSurface, size: 14),
             const SizedBox(width: 4),
             Text(
               'Custom',
-              style: DesignSystem.getLabelMd(context, color: Colors.white),
+              style: DesignSystem.getLabelMd(context, color: theme.onSurface),
             ),
           ],
         ),
@@ -256,17 +259,17 @@ class TimerScreen extends StatelessWidget {
           ),
           title: Text(
             'New Category',
-            style: DesignSystem.getHeadlineMd(context, color: Colors.white),
+            style: DesignSystem.getHeadlineMd(context, color: theme.onSurface),
           ),
           content: TextField(
             controller: textController,
             autofocus: true,
-            style: const TextStyle(color: Colors.white),
+            style: TextStyle(color: theme.onSurface),
             decoration: InputDecoration(
               hintText: 'Enter category name',
-              hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.3)),
-              enabledBorder: const UnderlineInputBorder(
-                borderSide: BorderSide(color: Color(0x1AFFFFFF)),
+              hintStyle: TextStyle(color: theme.onSurfaceMuted.withValues(alpha: 0.5)),
+              enabledBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: theme.outline.withValues(alpha: 0.3)),
               ),
               focusedBorder: UnderlineInputBorder(
                 borderSide: BorderSide(color: theme.defaultAccent),
@@ -341,7 +344,7 @@ class TimerScreen extends StatelessWidget {
                   session.category,
                   style: DesignSystem.getBodyMd(
                     context,
-                    color: Colors.white,
+                    color: theme.onSurface,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -394,7 +397,7 @@ class TimerScreen extends StatelessWidget {
                 children: [
                   Text(
                     'Set Focus Duration',
-                    style: DesignSystem.getHeadlineMd(context, color: Colors.white),
+                    style: DesignSystem.getHeadlineMd(context, color: theme.onSurface),
                   ),
                   const SizedBox(height: 24),
                   Row(
@@ -404,7 +407,7 @@ class TimerScreen extends StatelessWidget {
                       Column(
                         children: [
                           IconButton(
-                            icon: const Icon(Icons.keyboard_arrow_up, color: Colors.white),
+                            icon: Icon(Icons.keyboard_arrow_up, color: theme.onSurface),
                             onPressed: () {
                               setModalState(() {
                                 selectedHours = (selectedHours + 1) % 24;
@@ -413,10 +416,10 @@ class TimerScreen extends StatelessWidget {
                           ),
                           Text(
                             selectedHours.toString().padLeft(2, '0'),
-                            style: const TextStyle(fontSize: 48, color: Colors.white, fontWeight: FontWeight.bold),
+                            style: TextStyle(fontSize: 48, color: theme.onSurface, fontWeight: FontWeight.bold),
                           ),
                           IconButton(
-                            icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white),
+                            icon: Icon(Icons.keyboard_arrow_down, color: theme.onSurface),
                             onPressed: () {
                               setModalState(() {
                                 selectedHours = (selectedHours - 1 + 24) % 24;
@@ -427,16 +430,16 @@ class TimerScreen extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(width: 40),
-                      const Text(
+                      Text(
                         ':',
-                        style: TextStyle(fontSize: 48, color: Colors.white54, fontWeight: FontWeight.bold),
+                        style: TextStyle(fontSize: 48, color: theme.onSurfaceMuted, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(width: 40),
                       // Minutes Selector
                       Column(
                         children: [
                           IconButton(
-                            icon: const Icon(Icons.keyboard_arrow_up, color: Colors.white),
+                            icon: Icon(Icons.keyboard_arrow_up, color: theme.onSurface),
                             onPressed: () {
                               setModalState(() {
                                 selectedMinutes = (selectedMinutes + 5) % 60;
@@ -445,10 +448,10 @@ class TimerScreen extends StatelessWidget {
                           ),
                           Text(
                             selectedMinutes.toString().padLeft(2, '0'),
-                            style: const TextStyle(fontSize: 48, color: Colors.white, fontWeight: FontWeight.bold),
+                            style: TextStyle(fontSize: 48, color: theme.onSurface, fontWeight: FontWeight.bold),
                           ),
                           IconButton(
-                            icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white),
+                            icon: Icon(Icons.keyboard_arrow_down, color: theme.onSurface),
                             onPressed: () {
                               setModalState(() {
                                 selectedMinutes = (selectedMinutes - 5 + 60) % 60;

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/app_state.dart';
+import '../theme/design_system.dart';
 import 'glass_card.dart';
 
 class GlassNavBar extends StatelessWidget {
@@ -26,6 +27,7 @@ class GlassNavBar extends StatelessWidget {
               icon: Icons.timer,
               isActive: activeTab == 0,
               activeColor: theme.defaultAccent,
+              theme: theme,
               onTap: () => appState.activeTab = 0,
             ),
             // Stats Tab
@@ -33,13 +35,15 @@ class GlassNavBar extends StatelessWidget {
               context: context,
               icon: Icons.equalizer,
               isActive: activeTab == 1,
-              activeColor: Colors.white,
+              activeColor: theme.defaultAccent,
+              theme: theme,
               onTap: () => appState.activeTab = 1,
             ),
             // Profile Tab
             _buildProfileNavBarItem(
               context: context,
               isActive: activeTab == 2,
+              theme: theme,
               onTap: () => appState.activeTab = 2,
             ),
           ],
@@ -53,6 +57,7 @@ class GlassNavBar extends StatelessWidget {
     required IconData icon,
     required bool isActive,
     required Color activeColor,
+    required AppThemeData theme,
     required VoidCallback onTap,
   }) {
     return GestureDetector(
@@ -66,7 +71,7 @@ class GlassNavBar extends StatelessWidget {
             child: Icon(
               icon,
               size: 26,
-              color: isActive ? activeColor : Colors.white.withValues(alpha: 0.4),
+              color: isActive ? activeColor : theme.onSurface.withValues(alpha: 0.4),
             ),
           ),
           Container(
@@ -86,6 +91,7 @@ class GlassNavBar extends StatelessWidget {
   Widget _buildProfileNavBarItem({
     required BuildContext context,
     required bool isActive,
+    required AppThemeData theme,
     required VoidCallback onTap,
   }) {
     if (isActive) {
@@ -93,13 +99,13 @@ class GlassNavBar extends StatelessWidget {
         onTap: onTap,
         child: Container(
           padding: const EdgeInsets.all(12),
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: Color(0xFFE2E2E2), // Solid white circle
+            color: theme.onSurface, // Solid themed text/foreground color circle
           ),
-          child: const Icon(
+          child: Icon(
             Icons.person,
-            color: Color(0xFF131313), // Solid black icon
+            color: theme.background, // Solid themed background icon
             size: 24,
           ),
         ),
@@ -116,7 +122,7 @@ class GlassNavBar extends StatelessWidget {
               child: Icon(
                 Icons.person_outline,
                 size: 26,
-                color: Colors.white.withValues(alpha: 0.4),
+                color: theme.onSurface.withValues(alpha: 0.4),
               ),
             ),
             const SizedBox(height: 6), // Align vertically with dot items

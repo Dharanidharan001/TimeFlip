@@ -138,6 +138,12 @@ class AppState extends ChangeNotifier {
   int _streak = 0;
   int get streak => _streak;
 
+  int _bestStreak = 0;
+  int get bestStreak => _bestStreak;
+
+  String _lastFocusDate = '';
+  String get lastFocusDate => _lastFocusDate;
+
   Duration _todayTotalFocus = Duration.zero;
   Duration get todayTotalFocus => _todayTotalFocus;
 
@@ -189,13 +195,47 @@ class AppState extends ChangeNotifier {
   Future<void> _loadUserData(String uid) async {
     try {
       final userDoc = await _db.collection('users').doc(uid).get();
+      final todayStr = DateTime.now().toIso8601String().substring(0, 10);
       if (userDoc.exists) {
         final data = userDoc.data()!;
         _streak = data['streak'] ?? 0;
-        _todayTotalFocus = Duration(seconds: data['todayTotalFocusSeconds'] ?? 0);
+        _bestStreak = data['bestStreak'] ?? _streak;
+        _lastFocusDate = data['lastFocusDate'] ?? '';
+        
+        if (_lastFocusDate == todayStr) {
+          _todayTotalFocus = Duration(seconds: data['todayTotalFocusSeconds'] ?? 0);
+        } else {
+          _todayTotalFocus = Duration.zero;
+          final yesterdayStr = DateTime.now().subtract(const Duration(days: 1)).toIso8601String().substring(0, 10);
+          final updates = <String, dynamic>{
+            'todayTotalFocusSeconds': 0,
+          };
+          if (_lastFocusDate != yesterdayStr && _lastFocusDate.isNotEmpty) {
+            _streak = 0;
+            updates['streak'] = 0;
+          }
+          _db.collection('users').doc(uid).update(updates);
+        }
       } else {
         _streak = 0;
+        _bestStreak = 0;
+        _lastFocusDate = '';
         _todayTotalFocus = Duration.zero;
+        
+        // Initialize in Firestore database if missing
+        final currentUser = FirebaseAuth.instance.currentUser;
+        if (currentUser != null) {
+          await _db.collection('users').doc(uid).set({
+            'uid': uid,
+            'name': currentUser.displayName ?? currentUser.email?.split('@')[0] ?? 'User',
+            'email': currentUser.email ?? '',
+            'createdAt': FieldValue.serverTimestamp(),
+            'streak': 0,
+            'bestStreak': 0,
+            'todayTotalFocusSeconds': 0,
+            'lastFocusDate': '',
+          }, SetOptions(merge: true));
+        }
       }
 
       final sessionsQuery = await _db
@@ -203,7 +243,7 @@ class AppState extends ChangeNotifier {
           .doc(uid)
           .collection('sessions')
           .orderBy('timestamp', descending: true)
-          .limit(20)
+          .limit(100)
           .get();
 
       _recentSessions = sessionsQuery.docs.map((doc) {
@@ -227,6 +267,8 @@ class AppState extends ChangeNotifier {
 
   void _clearUserData() {
     _streak = 0;
+    _bestStreak = 0;
+    _lastFocusDate = '';
     _todayTotalFocus = Duration.zero;
     _recentSessions = [];
     _timelineSessions = [];
@@ -291,11 +333,25 @@ class AppState extends ChangeNotifier {
             'timestamp': Timestamp.fromDate(newSession.timestamp),
           });
 
-          _streak = _streak == 0 ? 1 : _streak; // Set streak to 1 if first session
+          final todayStr = DateTime.now().toIso8601String().substring(0, 10);
+          final yesterdayStr = DateTime.now().subtract(const Duration(days: 1)).toIso8601String().substring(0, 10);
+          
+          if (_lastFocusDate == yesterdayStr) {
+            _streak += 1;
+          } else if (_lastFocusDate != todayStr) {
+            _streak = 1;
+          }
+          _lastFocusDate = todayStr;
+          
+          if (_streak > _bestStreak) {
+            _bestStreak = _streak;
+          }
+
           _db.collection('users').doc(user.uid).set({
             'streak': _streak,
+            'bestStreak': _bestStreak,
             'todayTotalFocusSeconds': _todayTotalFocus.inSeconds,
-            'lastFocusDate': DateTime.now().toIso8601String().substring(0, 10),
+            'lastFocusDate': _lastFocusDate,
           }, SetOptions(merge: true));
         }
       }
@@ -304,6 +360,170 @@ class AppState extends ChangeNotifier {
     _isTimerPaused = false;
     _currentTimerDuration = Duration.zero;
     notifyListeners();
+  }
+
+  // Dynamic statistics getters
+  Duration get thisWeekFocus {
+    final now = DateTime.now();
+    final startOfWeek = DateTime(now.year, now.month, now.day).subtract(Duration(days: now.weekday - 1));
+    return _recentSessions
+        .where((s) => s.timestamp.isAfter(startOfWeek))
+        .fold(Duration.zero, (prev, s) => prev + s.duration);
+  }
+
+  Duration get thisMonthFocus {
+    final now = DateTime.now();
+    final startOfMonth = DateTime(now.year, now.month, 1);
+    return _recentSessions
+        .where((s) => s.timestamp.isAfter(startOfMonth))
+        .fold(Duration.zero, (prev, s) => prev + s.duration);
+  }
+
+  int get totalSessionsCount => _recentSessions.length;
+
+  Duration get averageSessionDuration {
+    if (_recentSessions.isEmpty) return Duration.zero;
+    final totalDuration = _recentSessions.fold(Duration.zero, (prev, s) => prev + s.duration);
+    return Duration(seconds: totalDuration.inSeconds ~/ _recentSessions.length);
+  }
+
+  List<double> get weeklyOverviewHours {
+    final now = DateTime.now();
+    final startOfWeek = DateTime(now.year, now.month, now.day).subtract(Duration(days: now.weekday - 1));
+    final hours = List<double>.filled(7, 0.0);
+    for (int i = 0; i < 7; i++) {
+      final day = startOfWeek.add(Duration(days: i));
+      final dayStart = DateTime(day.year, day.month, day.day);
+      final dayEnd = dayStart.add(const Duration(days: 1));
+      final daySessions = _recentSessions.where((s) => s.timestamp.isAfter(dayStart) && s.timestamp.isBefore(dayEnd));
+      final totalSecs = daySessions.fold(0, (prev, s) => prev + s.duration.inSeconds);
+      hours[i] = totalSecs / 3600.0;
+    }
+    return hours;
+  }
+
+  double get averageDailyFocusHoursThisWeek {
+    final hours = weeklyOverviewHours;
+    final activeDays = hours.where((h) => h > 0).length;
+    if (activeDays == 0) return 0.0;
+    final total = hours.fold(0.0, (prev, h) => prev + h);
+    return total / activeDays;
+  }
+
+  List<bool> get weeklyChecklist {
+    final now = DateTime.now();
+    final startOfWeek = DateTime(now.year, now.month, now.day).subtract(Duration(days: now.weekday - 1));
+    final checked = List<bool>.filled(7, false);
+    for (int i = 0; i < 7; i++) {
+      final day = startOfWeek.add(Duration(days: i));
+      final dayStart = DateTime(day.year, day.month, day.day);
+      final dayEnd = dayStart.add(const Duration(days: 1));
+      checked[i] = _recentSessions.any((s) => s.timestamp.isAfter(dayStart) && s.timestamp.isBefore(dayEnd));
+    }
+    return checked;
+  }
+
+  int get weeklyActiveDaysCount => weeklyChecklist.where((c) => c).length;
+
+  int get weeklyConsistencyRate {
+    final active = weeklyActiveDaysCount;
+    return ((active / 7) * 100).round();
+  }
+
+  double get studyPercentage {
+    if (_recentSessions.isEmpty) return 0.0;
+    final totalSecs = _recentSessions.fold(0, (prev, s) => prev + s.duration.inSeconds);
+    if (totalSecs == 0) return 0.0;
+    final studySecs = _recentSessions.where((s) => s.category == 'Study').fold(0, (prev, s) => prev + s.duration.inSeconds);
+    return studySecs / totalSecs;
+  }
+
+  double get codingPercentage {
+    if (_recentSessions.isEmpty) return 0.0;
+    final totalSecs = _recentSessions.fold(0, (prev, s) => prev + s.duration.inSeconds);
+    if (totalSecs == 0) return 0.0;
+    final codingSecs = _recentSessions.where((s) => s.category == 'Coding').fold(0, (prev, s) => prev + s.duration.inSeconds);
+    return codingSecs / totalSecs;
+  }
+
+  double get readingPercentage {
+    if (_recentSessions.isEmpty) return 0.0;
+    final totalSecs = _recentSessions.fold(0, (prev, s) => prev + s.duration.inSeconds);
+    if (totalSecs == 0) return 0.0;
+    final readingSecs = _recentSessions.where((s) => s.category == 'Reading').fold(0, (prev, s) => prev + s.duration.inSeconds);
+    return readingSecs / totalSecs;
+  }
+
+  String get peakFocusTime {
+    if (_recentSessions.isEmpty) return 'No sessions';
+    final blocks = List<int>.filled(6, 0);
+    for (final s in _recentSessions) {
+      final hour = s.timestamp.hour;
+      blocks[hour ~/ 4]++;
+    }
+    int maxIdx = 0;
+    for (int i = 1; i < 6; i++) {
+      if (blocks[i] > blocks[maxIdx]) {
+        maxIdx = i;
+      }
+    }
+    switch (maxIdx) {
+      case 0: return '12 AM – 4 AM';
+      case 1: return '4 AM – 8 AM';
+      case 2: return '8 AM – 12 PM';
+      case 3: return '12 PM – 4 PM';
+      case 4: return '4 PM – 8 PM';
+      case 5: return '8 PM – 12 AM';
+      default: return 'No sessions';
+    }
+  }
+
+  String get productivityTrend {
+    final now = DateTime.now();
+    final startOfWeek = DateTime(now.year, now.month, now.day).subtract(Duration(days: now.weekday - 1));
+    final startOfLastWeek = startOfWeek.subtract(const Duration(days: 7));
+    
+    final thisWeekSecs = _recentSessions
+        .where((s) => s.timestamp.isAfter(startOfWeek))
+        .fold(0, (prev, s) => prev + s.duration.inSeconds);
+    final lastWeekSecs = _recentSessions
+        .where((s) => s.timestamp.isAfter(startOfLastWeek) && s.timestamp.isBefore(startOfWeek))
+        .fold(0, (prev, s) => prev + s.duration.inSeconds);
+        
+    if (lastWeekSecs == 0) {
+      if (thisWeekSecs == 0) {
+        return 'Steady (0h this week)';
+      }
+      return 'Increasing (+100%)';
+    }
+    final change = ((thisWeekSecs - lastWeekSecs) / lastWeekSecs * 100).round();
+    if (change >= 0) {
+      return 'Increasing (+$change% vs last week)';
+    } else {
+      return 'Decreasing ($change% vs last week)';
+    }
+  }
+
+  String get weeklyTrendPercent {
+    final now = DateTime.now();
+    final startOfWeek = DateTime(now.year, now.month, now.day).subtract(Duration(days: now.weekday - 1));
+    final startOfLastWeek = startOfWeek.subtract(const Duration(days: 7));
+    
+    final thisWeekSecs = _recentSessions
+        .where((s) => s.timestamp.isAfter(startOfWeek))
+        .fold(0, (prev, s) => prev + s.duration.inSeconds);
+    final lastWeekSecs = _recentSessions
+        .where((s) => s.timestamp.isAfter(startOfLastWeek) && s.timestamp.isBefore(startOfWeek))
+        .fold(0, (prev, s) => prev + s.duration.inSeconds);
+        
+    if (lastWeekSecs == 0) return thisWeekSecs > 0 ? '+100%' : '0%';
+    final change = ((thisWeekSecs - lastWeekSecs) / lastWeekSecs * 100).round();
+    return change >= 0 ? '+$change%' : '$change%';
+  }
+
+  double get totalFocusHours {
+    final totalSecs = _recentSessions.fold(0, (prev, s) => prev + s.duration.inSeconds);
+    return totalSecs / 3600.0;
   }
 
   void _startTicker() {

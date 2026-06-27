@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-enum AppThemeType { amoled, cyberBlue, retroFlip, terminal }
+enum AppThemeType { amoled, cyberBlue, retroFlip, terminal, light }
 
 class AppThemeData {
   final AppThemeType type;
@@ -83,6 +83,19 @@ class AppThemeData {
           outline: const Color(0xFF30363D),
           defaultAccent: const Color(0xFF238636), // Green
           error: const Color(0xFFF85149),
+        );
+      case AppThemeType.light:
+        return AppThemeData(
+          type: AppThemeType.light,
+          name: 'Light Mode',
+          background: const Color(0xFFF3F4F6),
+          surface: const Color(0xFFFFFFFF),
+          surfaceContainer: const Color(0xFFE5E7EB),
+          onSurface: const Color(0xFF1F2937),
+          onSurfaceMuted: const Color(0xFF4B5563),
+          outline: const Color(0xFFD1D5DB),
+          defaultAccent: accent == const Color(0xFFADC6FF) ? const Color(0xFF2563EB) : accent,
+          error: const Color(0xFFEF4444),
         );
     }
   }

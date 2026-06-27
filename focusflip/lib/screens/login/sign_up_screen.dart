@@ -5,6 +5,7 @@ import '../../theme/design_system.dart';
 import '../../widgets/glass_card.dart';
 import 'sign_in_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -48,6 +49,17 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
         if (credential.user != null) {
           await credential.user!.updateDisplayName(_nameController.text.trim());
+          
+          // Create user document in Firestore database
+          await FirebaseFirestore.instance.collection('users').doc(credential.user!.uid).set({
+            'uid': credential.user!.uid,
+            'name': _nameController.text.trim(),
+            'email': _emailController.text.trim(),
+            'createdAt': FieldValue.serverTimestamp(),
+            'streak': 0,
+            'todayTotalFocusSeconds': 0,
+            'lastFocusDate': '',
+          });
         }
 
         if (!mounted) return;
